@@ -1,0 +1,234 @@
+[
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/inst/include/LocalVolatility.h",
+        "file_last_write": 1731956189.0,
+        "definitions": [
+            {
+                "usr": "c:LocalVolatility.h@173@macro@RCPP_LocalVolatility_H_GEN_",
+                "kind": 9,
+                "parent_name": "",
+                "name": "RCPP_LocalVolatility_H_GEN_",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/inst/include/LocalVolatility.h",
+                "line": 5,
+                "column": 9,
+                "hidden": true
+            }
+        ],
+        "hidden": true
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_american_option_local_volatility.cpp",
+        "file_last_write": 1731955769.0,
+        "definitions": [
+            {
+                "usr": "c:@N@LocalVolatility@F@american_option_lv#d#d#d#d#d#I#$@N@Rcpp@S@String#d#d#I#I#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_lv(double, double, double, double, double, NumericMatrix, String, double, double, int, int, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_american_option_local_volatility.cpp",
+                "line": 9,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@american_option_lv#d#d#d#d#d#I#$@N@Rcpp@S@String#d#d#I#I#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_lv(double, double, double, double, double, NumericMatrix, String, double, double, int, int, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_american_option_local_volatility.cpp",
+                "line": 140,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_european_local_volatility.cpp",
+        "file_last_write": 1731944457.0,
+        "definitions": [
+            {
+                "usr": "c:@N@LocalVolatility@F@european_option_lv#d#d#d#d#d#I#$@N@Rcpp@S@String#d#d#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_lv(double, double, double, double, double, NumericMatrix, String, double, double, int, int)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_european_local_volatility.cpp",
+                "line": 9,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@european_option_lv#d#d#d#d#d#I#$@N@Rcpp@S@String#d#d#I#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_lv(double, double, double, double, double, NumericMatrix, String, double, double, int, int)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/1D_european_local_volatility.cpp",
+                "line": 121,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_local_volatility.cpp",
+        "file_last_write": 1731946504.0,
+        "definitions": [
+            {
+                "usr": "c:@N@LocalVolatility@F@american_option_lv_2d#d#d#d#d#d#d#d#I#I#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_lv_2d(double, double, double, double, double, double, double, NumericMatrix, NumericMatrix, double, String, double, double, double, double, int, int, int, double, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_local_volatility.cpp",
+                "line": 9,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@american_option_lv_2d#d#d#d#d#d#d#d#I#I#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_lv_2d(double, double, double, double, double, double, double, NumericMatrix, NumericMatrix, double, String, double, double, double, double, int, int, int, double, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_local_volatility.cpp",
+                "line": 225,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_option.cpp",
+        "file_last_write": 1731946513.0,
+        "definitions": [
+            {
+                "usr": "c:@N@LocalVolatility@F@american_option_2d#d#d#d#d#d#d#d#d#d#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_2d(double, double, double, double, double, double, double, double, double, double, String, double, double, double, double, int, int, int, double, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_option.cpp",
+                "line": 10,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@american_option_2d#d#d#d#d#d#d#d#d#d#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#d#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "american_option_2d(double, double, double, double, double, double, double, double, double, double, String, double, double, double, double, int, int, int, double, double, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_american_option.cpp",
+                "line": 225,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_european_local_volatility.cpp",
+        "file_last_write": 1731944485.0,
+        "definitions": [
+            {
+                "usr": "c:@N@LocalVolatility@F@european_option_lv_2d#d#d#d#d#d#d#d#I#I#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_lv_2d(double, double, double, double, double, double, double, NumericMatrix, NumericMatrix, double, String, double, double, double, double, int, int, int, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_european_local_volatility.cpp",
+                "line": 10,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@european_option_lv_2d#d#d#d#d#d#d#d#I#I#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_lv_2d(double, double, double, double, double, double, double, NumericMatrix, NumericMatrix, double, String, double, double, double, double, int, int, int, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_european_local_volatility.cpp",
+                "line": 203,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_european_option.cpp",
+        "file_last_write": 1731944474.0,
+        "definitions": [
+            {
+                "usr": "c:@F@european_option_2d#d#d#d#d#d#d#d#d#d#d#$@N@Rcpp@S@String#d#d#d#d#I#I#I#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_2d(double, double, double, double, double, double, double, double, double, double, String, double, double, double, double, int, int, int, double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/2D_european_option.cpp",
+                "line": 34,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+        "file_last_write": 1731918575.0,
+        "definitions": [
+            {
+                "usr": "c:@F@linear_interpolation#d#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "linear_interpolation(double, double, Rcpp::NumericVector)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+                "line": 4,
+                "column": 8,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@bilinear_interpolation#&I#S0_#S0_#&d#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "bilinear_interpolation(NumericVector &, NumericVector &, NumericMatrix &, double &, double &)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+                "line": 15,
+                "column": 8,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@thomas_algorithm#&I#S0_#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "thomas_algorithm(NumericVector &, NumericVector &, NumericVector &, NumericVector &)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+                "line": 50,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@isinh#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "isinh(double)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+                "line": 80,
+                "column": 8,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@tavella_randall#d#d#d#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "tavella_randall(double, double, double, double, int)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.cpp",
+                "line": 84,
+                "column": 15,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility/src/utils.h",
+        "file_last_write": 1731337196.0,
+        "definitions": [],
+        "hidden": false
+    }
+]

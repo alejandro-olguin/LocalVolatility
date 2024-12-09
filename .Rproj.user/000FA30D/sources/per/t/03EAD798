@@ -1,0 +1,26 @@
+{
+    "id": "03EAD798",
+    "path": "~/Documents/Projects/Packages/LocalVolatility/src/2D_american_local_volatility.cpp",
+    "project_path": "src/2D_american_local_volatility.cpp",
+    "type": "cpp",
+    "hash": "3968400059",
+    "contents": "",
+    "dirty": false,
+    "created": 1731946097775.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "14,40",
+        "scrollLine": "0"
+    },
+    "folds": "28|50|192|2|\n",
+    "lastKnownWriteTime": 1731946504,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1731955638660,
+    "read_only": false,
+    "read_only_alternatives": []
+}
