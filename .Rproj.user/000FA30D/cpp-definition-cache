@@ -169,6 +169,23 @@
         "hidden": false
     },
     {
+        "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility Respaldo Mejora 3/src/2D_european_option_cf.cpp",
+        "file_last_write": 1761282965.0,
+        "definitions": [
+            {
+                "usr": "c:@F@european_option_cf_2d#d#d#d#d#d#d#d#d#d#d#I#$@N@Rcpp@S@String#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "european_option_cf_2d(double, double, double, double, double, double, double, double, double, double, int, String)",
+                "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility Respaldo Mejora 3/src/2D_european_option_cf.cpp",
+                "line": 48,
+                "column": 8,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
         "file": "/Users/alejandro/Documents/Projects/Packages/LocalVolatility Respaldo Mejora 3/src/utils.cpp",
         "file_last_write": 1761282248.0,
         "definitions": [

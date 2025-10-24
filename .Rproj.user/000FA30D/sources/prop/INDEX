@@ -44,6 +44,8 @@
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2F2D_american_option.cpp="8B524EC8"
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2F2D_european_local_volatility.cpp="EB7BCAB2"
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2F2D_european_option.cpp="C6B8B3E1"
+~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2F2D_european_option_cf.cpp="EB7B38D4"
+~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2F2D_european_option_closed_form.cpp="114847B7"
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%203%2Fsrc%2FRcppExports.cpp="B439A2CD"
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%2FDESCRIPTION="4EFF9E5B"
 ~%2FDocuments%2FProjects%2FPackages%2FLocalVolatility%20Respaldo%20Mejora%2Fsrc%2F1D_american_option_local_volatility.cpp="D007C9D8"

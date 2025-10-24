@@ -315,6 +315,51 @@ RcppExport SEXP _LocalVolatility_european_option_2d(SEXP s_0SEXP, SEXP x_0SEXP, 
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// european_option_cf_2d
+double european_option_cf_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, int n, String type);
+static SEXP _LocalVolatility_european_option_cf_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP nSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
+    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
+    Rcpp::traits::input_parameter< double >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
+    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_s(sigma_sSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_x(sigma_xSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< String >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(european_option_cf_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _LocalVolatility_european_option_cf_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP nSEXP, SEXP typeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_cf_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, nSEXP, typeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // tavella_randall
 NumericVector tavella_randall(double x0, double alpha, double x_min, double x_max, int n);
 static SEXP _LocalVolatility_tavella_randall_try(SEXP x0SEXP, SEXP alphaSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP nSEXP) {
@@ -364,6 +409,7 @@ static int _LocalVolatility_RcppExport_validate(const char* sig) {
         signatures.insert("double(*american_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double,double,double)");
         signatures.insert("double(*european_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double)");
         signatures.insert("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
+        signatures.insert("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,int,String)");
         signatures.insert("NumericVector(*tavella_randall)(double,double,double,double,int)");
     }
     return signatures.find(sig) != signatures.end();
@@ -377,6 +423,7 @@ RcppExport SEXP _LocalVolatility_RcppExport_registerCCallable() {
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_2d", (DL_FUNC)_LocalVolatility_american_option_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_lv_2d", (DL_FUNC)_LocalVolatility_european_option_lv_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_2d", (DL_FUNC)_LocalVolatility_european_option_2d_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_cf_2d", (DL_FUNC)_LocalVolatility_european_option_cf_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_tavella_randall", (DL_FUNC)_LocalVolatility_tavella_randall_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_RcppExport_validate", (DL_FUNC)_LocalVolatility_RcppExport_validate);
     return R_NilValue;
@@ -389,6 +436,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LocalVolatility_american_option_2d", (DL_FUNC) &_LocalVolatility_american_option_2d, 21},
     {"_LocalVolatility_european_option_lv_2d", (DL_FUNC) &_LocalVolatility_european_option_lv_2d, 19},
     {"_LocalVolatility_european_option_2d", (DL_FUNC) &_LocalVolatility_european_option_2d, 19},
+    {"_LocalVolatility_european_option_cf_2d", (DL_FUNC) &_LocalVolatility_european_option_cf_2d, 12},
     {"_LocalVolatility_tavella_randall", (DL_FUNC) &_LocalVolatility_tavella_randall, 5},
     {"_LocalVolatility_RcppExport_registerCCallable", (DL_FUNC) &_LocalVolatility_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}

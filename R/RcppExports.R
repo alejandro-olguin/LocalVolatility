@@ -184,6 +184,49 @@ european_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, 
     .Call(`_LocalVolatility_european_option_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha)
 }
 
+#' European Option 2D (closed-form, ADR)
+#'
+#' Closed-form Black–Scholes price for a European option on an ADR whose
+#' underlying is the product S·X scaled by the ADR ratio n: ADR = (S·X)/n.
+#' Assumes constant volatilities for S and X and correlation rho. The
+#' effective ADR log-volatility is
+#'   sigma_adr = sqrt(sigma_s^2 + sigma_x^2 + 2 * rho * sigma_s * sigma_x).
+#'
+#' The domestic-measure discounting is used: SX leg discounted by exp(-q * tau),
+#' strike leg by exp(-r_d * tau). Note r_f does not enter the closed form directly
+#' but is kept for API symmetry with PDE solvers.
+#'
+#' @param s_0 Stock spot price S(0).
+#' @param x_0 FX spot price X(0) (domestic per foreign).
+#' @param k Strike price (domestic currency).
+#' @param tau Time to expiry (in years, > 0).
+#' @param r_d Risk-free rate (domestic).
+#' @param r_f Risk-free rate (foreign) — kept for signature symmetry.
+#' @param q Dividend yield for the equity.
+#' @param sigma_s Constant volatility of the stock.
+#' @param sigma_x Constant volatility of the FX.
+#' @param rho Correlation between the stock and the FX in `[-1, 1]`.
+#' @param n ADR ratio (shares per ADR), usually >= 1.
+#' @param type Either "call" or "put" (case-insensitive).
+#'
+#' @return Option price as a numeric scalar.
+#'
+#' @details
+#' This is the standard Black–Scholes formula applied to ADR = (S·X)/n with
+#' log-normal dynamics under the domestic measure. Let ADR_0 = (s_0 * x_0)/n and
+#' sigma_adr as above. Then
+#'   `d1 = [ln(ADR_0 / K) + (r_d - q + 0.5 * sigma_adr^2) * tau] / (sigma_adr * sqrt(tau))`,
+#'   `d2 = d1 - sigma_adr * sqrt(tau)`.
+#' The call is ADR_0 `e^{-q tau} N(d1) - K e^{-r_d tau} N(d2)`; the put uses put-call parity.
+#'
+#' @examples
+#' european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01, 0.2, 0.1, 0.3, 1, "call")
+#'
+#' @export
+european_option_cf_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type) {
+    .Call(`_LocalVolatility_european_option_cf_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type)
+}
+
 #' Generate a sequence based on the Tavella and Randall method
 #'
 #' This function generates a sequence of numbers following the Tavella and Randall method,
