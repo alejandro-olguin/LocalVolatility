@@ -1,2 +1,16 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^README\.Rmd$
+^README\.md$
+^NEWS\.md$
+^\.github$
+^pkgdown$
+^_pkgdown\.yml$
+^docs$
+^vignettes/.+\.html$
+^inst/benchmarks$
+^tools$
+^\.vscode$
+^\.DS_Store$
+^\.lintr$
+^CONTRIBUTING\.md$

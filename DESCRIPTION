@@ -1,12 +1,28 @@
 Package: LocalVolatility
 Type: Package
-Title: Pricing Engines of Local Volatility Models
-Version: 1.0
-Date: 2024-11-04
-Author: Alejandro Olguin
-Maintainer: Alejandro Olguin <alejandro_olguin@icloud.com>
-Description: This package has pricing engines of local volatilities models for 1D and 2D options.
+Title: Pricing Engines for Local Volatility Models
+Version: 2.0.0
+Date: 2025-10-24
+Encoding: UTF-8
+Authors@R: 
+	person("Alejandro", "Olguin", email = "alejandro_olguin@icloud.com", role = c("aut", "cre"))
+Description: Finite-difference PDE pricing engines for local volatility models in 1D and 2D,
+	covering European and American options with constant and local volatilities. Implemented in C++
+	via Rcpp, including Tavella–Randall grids, operator splitting, and a penalty method.
 License: GPL (>= 2)
+URL: https://github.com/alejandro-olguin/LocalVolatility
+BugReports: https://github.com/alejandro-olguin/LocalVolatility/issues
+Depends: R (>= 3.5.0)
 Imports: Rcpp (>= 1.0.13)
 LinkingTo: Rcpp
-RoxygenNote: 7.3.2
+SystemRequirements: C++17
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+	testthat (>= 3.0.0),
+	covr,
+	rmarkdown,
+	knitr,
+	pkgdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3

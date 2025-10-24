@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{european_option_lv_2d}
 \alias{european_option_lv_2d}
-\title{European Option Local Volatility 2D}
+\title{European Option 2D (local volatility)}
 \usage{
 european_option_lv_2d(
   s_0,
@@ -27,44 +27,48 @@ european_option_lv_2d(
 )
 }
 \arguments{
-\item{s_0}{Stock spot price}
+\item{s_0}{Stock spot price.}
 
-\item{x_0}{FX spot price}
+\item{x_0}{FX spot price (domestic per foreign).}
 
-\item{k}{Strike price}
+\item{k}{Strike price (domestic currency).}
 
-\item{tau}{Time to expiry}
+\item{tau}{Time to expiry (in years).}
 
-\item{r_d}{Risk-free rate (domestic)}
+\item{r_d}{Risk-free rate (domestic).}
 
-\item{r_f}{Risk-free rate (foreign)}
+\item{r_f}{Risk-free rate (foreign).}
 
-\item{q}{Dividend yield}
+\item{q}{Dividend yield.}
 
-\item{sigma_s}{Local volatility matrix of the stock}
+\item{sigma_s}{Local volatility matrix for the stock of size (n_s + 1) x n_t.}
 
-\item{sigma_x}{Local volatility matrix of the FX}
+\item{sigma_x}{Local volatility matrix for the FX of size (n_x + 1) x n_t.}
 
-\item{rho}{Correlatin between the stock and the FX}
+\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
 
-\item{type}{Either "call" or "put"}
+\item{type}{Either "call" or "put".}
 
-\item{s_min}{Min value of the stock prices grid}
+\item{s_min, s_max}{Min/Max of the stock grid.}
 
-\item{s_max}{Man value of the stock prices grid}
+\item{x_min, x_max}{Min/Max of the FX grid.}
 
-\item{x_min}{Min value of the FX prices grid}
+\item{n_s}{Number of intervals in stock grid (n_s + 1 nodes).}
 
-\item{x_max}{Max value of the FX prices grid}
+\item{n_x}{Number of intervals in FX grid (n_x + 1 nodes).}
 
-\item{n_s}{Size of stock grid for finite difference grid}
+\item{n_t}{Number of time steps.}
 
-\item{n_x}{Size of FX grid for finite difference grid}
-
-\item{n_t}{Size of time grid for finite difference grid}
-
-\item{alpha}{Parameter that defines the uniformity of the grid}
+\item{alpha}{Grid clustering parameter for Tavella–Randall grids (> 0).}
 }
 \description{
-This function evaluates an European-style option on a common stock with local volatility in a foreing currency using finite differences.
+Prices a European option on an equity in a foreign currency using a 2D finite-difference PDE
+with time- and state-dependent local volatilities for both S and X.
+}
+\details{
+Domestic-measure drift and discounting are applied as in the constant-vol solver, but with
+pointwise volatilities. In the S-direction, mu_S = r_f - q - rho * sigma_S * sigma_X (local).
+In the X-direction, drift is r_d - r_f. Far-field Dirichlet boundaries use exp(-q * tau) on S·X
+and exp(-r_d * tau) on K. When \code{sigma_s} and \code{sigma_x} are constant-valued matrices, prices
+should match the constant-vol solver up to numerical tolerance.
 }

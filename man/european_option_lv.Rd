@@ -2,33 +2,33 @@
 % Please edit documentation in R/RcppExports.R
 \name{european_option_lv}
 \alias{european_option_lv}
-\title{European Option Local Volatility 1D}
+\title{European Option 1D (local volatility)}
 \usage{
 european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
 }
 \arguments{
-\item{s_0}{Stock spot price}
+\item{s_0}{Stock spot price.}
 
-\item{k}{Strike price}
+\item{k}{Strike price.}
 
-\item{tau}{Time to expiry}
+\item{tau}{Time to expiry (in years).}
 
-\item{r_d}{Risk-free rate (domestic)}
+\item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield}
+\item{q}{Dividend yield.}
 
-\item{sigma}{Local volatility matrix}
+\item{sigma}{Local volatility matrix sampled on the grid; commonly (n_s + 1) x (n_t + 1) or
+(n_s + 1) x n_t depending on solver indexing.}
 
-\item{type}{Either "call" or "put"}
+\item{type}{Either "call" or "put".}
 
-\item{s_min}{max value of the underlying prices grid}
+\item{s_min, s_max}{Min/Max of the asset grid.}
 
-\item{s_max}{min value of the underlying prices grid}
+\item{n_s}{Number of intervals in the asset grid (n_s + 1 nodes).}
 
-\item{n_s}{Size of asset grid for finite difference grid}
-
-\item{n_t}{Size of time grid for finite difference grid}
+\item{n_t}{Number of time steps.}
 }
 \description{
-This function evaluates an European-style option on a common stock with local volatility using finite differences.
+Prices a European option on a single equity with local volatility using a 1D Crank–Nicolson
+finite-difference scheme, time-dependent boundaries, and linear interpolation at the spot.
 }

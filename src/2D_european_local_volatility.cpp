@@ -7,196 +7,252 @@ using namespace Rcpp;
 
 namespace LocalVolatility {
 
-  double european_option_lv_2d(double s_0,
-                               double x_0,
-                               double k,
-                               double tau,
-                               double r_d,
-                               double r_f,
-                               double q,
-                               NumericMatrix sigma_s,
-                               NumericMatrix sigma_x,
-                               double rho,
-                               String type,
-                               double s_min,
-                               double s_max,
-                               double x_min,
-                               double x_max,
-                               int n_s,
-                               int n_x,
-                               int n_t,
-                               double alpha) {
+double european_option_lv_2d(double s_0,
+                             double x_0,
+                             double k,
+                             double tau,
+                             double r_d,
+                             double r_f,
+                             double q,
+                             NumericMatrix sigma_s,
+                             NumericMatrix sigma_x,
+                             double rho,
+                             String type,
+                             double s_min,
+                             double s_max,
+                             double x_min,
+                             double x_max,
+                             int n_s,
+                             int n_x,
+                             int n_t,
+                             double alpha) {
 
-    // Initialize grid and parameters
-    NumericVector s = tavella_randall(s_0, alpha, s_min, s_max, n_s);
-    NumericVector x = tavella_randall(x_0, alpha, x_min, x_max, n_x);
+  // --- guards ---
+  if (n_s < 3 || n_x < 3) stop("n_s and n_x must be >= 3");
+  if (n_t < 1)            stop("n_t must be >= 1");
+  if (s_max <= s_min || x_max <= x_min) stop("grid bounds must be increasing");
+  if (tau <= 0.0)         stop("tau must be > 0");
 
-    NumericMatrix u(n_s + 1, n_x + 1);
+  // Grids (Tavella–Randall, non-uniform)
+  NumericVector s = tavella_randall(s_0, alpha, s_min, s_max, n_s);
+  NumericVector x = tavella_randall(x_0, alpha, x_min, x_max, n_x);
 
-    if(type == "call"){
-      for (int i = 0; i < n_s; ++i) {
-        for (int j = 0; j < n_x; ++j) {
-          u(i, j) = std::max(s[i] * x[j] - k, 0.0);
-        }
-      }
+  // Non-uniform steps
+  NumericVector hs(n_s), hx(n_x);
+  for (int i = 0; i < n_s; ++i) hs[i] = s[i + 1] - s[i];
+  for (int j = 0; j < n_x; ++j) hx[j] = x[j + 1] - x[j];
 
-      // Boundary conditions payoff
-      // for (int i = 1; i < n_s + 1; i++) u(i, n_x) = u(i, n_x - 1);
-      // for (int j = 1; j < n_x + 1; j++) u(n_s, j) = u(n_s - 1, j);
+  const double dt = tau / n_t;
 
-    }else if(type == "put"){
-      for (int i = 0; i < n_s; ++i) {
-        for (int j = 0; j < n_x; ++j) {
-          u(i, j) = std::max(k - s[i] * x[j], 0.0);
-        }
-      }
-
-      // Boundary conditions payoff
-      // Homogeneous Neumann boundary conditions
-      // for (int i = 0; i <= n_s; i++) {
-      //   u(i, 0) = u(i, 1);         // Left boundary (x_min)
-      //   u(i, n_x) = u(i, n_x - 1); // Right boundary (x_max)
-      // }
-      // for (int j = 0; j <= n_x; j++) {
-      //   u(0, j) = u(1, j);         // Bottom boundary (s_min)
-      //   u(n_s, j) = u(n_s - 1, j); // Top boundary (s_max)
-      // }
-    }
-
-    // Mixed Boundary Condition Example (linear extrapolation)
-    for (int i = 0; i <= n_s; i++) {
-      u(i, n_x) = 2 * u(i, n_x - 1) - u(i, n_x - 2);  // Right boundary extrapolated
-    }
-    for (int j = 0; j <= n_x; j++) {
-      u(n_s, j) = 2 * u(n_s - 1, j) - u(n_s - 2, j);  // Top boundary extrapolated
-    }
-
-
-    NumericMatrix v = clone(u);
-
-
-    NumericVector hs(n_s), hx(n_x);
-    for (int i = 0; i < n_s-1; i++) hs[i] = s[i + 1] - s[i];
-    hs[n_s - 1] = hs[n_s - 2];
-
-    for (int j = 0; j < n_x-1; j++) hx[j] = x[j + 1] - x[j];
-    hx[n_x - 1] = hx[n_x - 2];
-
-    double dt = tau / n_t;
-
-    NumericVector as(n_s - 1), bs(n_s - 1), gs(n_s), fs(n_s - 1);
-    NumericVector ax(n_x - 1), bx(n_x - 1), gx(n_x), fx(n_x - 1);
-
-    int n = 2 * n_t;
-
-    // Main time loop
-    for (int t = 0; t < n_t; ++t) {
-
-      n -= 1;
-
-      // Step in the s-direction
-      for (int j = 1; j < n_x; ++j) {
-        for (int i = 1; i < n_s; ++i) {
-
-          // Rcpp::Rcout << "n: " << n << std::endl;
-          // Rcpp::Rcout << "s: " << s[i] << std::endl;
-
-          as[i - 1] = ((r_d - q) * s[i] * hs[i] - std::pow(sigma_s(i,n) * s[i], 2)) / (hs[i - 1] * (hs[i - 1] + hs[i]));
-          bs[i - 1] = 1 / dt + (std::pow(sigma_s(i,n) * s[i], 2) - (r_d - q) * s[i] * (hs[i] - hs[i - 1])) / (hs[i - 1] * hs[i]) + 0.5 * r_d;
-          gs[i - 1] = (-(r_d - q) * s[i] * hs[i - 1] - std::pow(sigma_s(i,n) * s[i], 2)) / (hs[i] * (hs[i - 1] + hs[i]));
-
-          fs[i - 1] = u(i, j) / dt + 0.5 * rho * sigma_s(i,n) * sigma_x(j,n) * s[i] * x[j] *
-            (u(i + 1, j + 1) + u(i - 1, j - 1) - u(i - 1, j + 1) - u(i + 1, j - 1)) /
-              (hs[i - 1] * hx[j] + hs[i] * hx[j] + hs[i] * hx[j - 1] + hs[i - 1] * hx[j - 1]);
-        }
-
-        bs[n_s - 2] += gs[n_s - 2];
-        as[0] = 0;
-        gs[n_s - 1] = 0;
-
-        NumericVector v_slice = thomas_algorithm(as, bs, gs, fs);
-        for (int i = 1; i < n_s; i++) v(i, j) = v_slice[i - 1];
-      }
-
-      // Boundary conditions for v
-      // for (int i = 1; i < n_s + 1; i++) v(i, n_x) = v(i, n_x - 1);
-      // for (int j = 1; j < n_x + 1; j++) v(n_s, j) = v(n_s - 1, j);
-
-      // Mixed Boundary Condition Example (linear extrapolation)
-      for (int i = 0; i <= n_s; i++) {
-        v(i, n_x) = 2 * v(i, n_x - 1) - v(i, n_x - 2);  // Right boundary extrapolated
-      }
-      for (int j = 0; j <= n_x; j++) {
-        v(n_s, j) = 2 * v(n_s - 1, j) - v(n_s - 2, j);  // Top boundary extrapolated
-      }
-
-      n -= 1;
-
-      // Rcpp::Rcout << "n: " << n << std::endl;
-
-      // Step in the x-direction
-      for (int i = 1; i < n_s; ++i) {
-        for (int j = 1; j < n_x; ++j) {
-          ax[j - 1] = ((r_d - r_f) * x[j] * hx[j] - std::pow(sigma_x(j,n) * x[j], 2)) / (hx[j - 1] * (hx[j - 1] + hx[j]));
-          bx[j - 1] = 1 / dt + (std::pow(sigma_x(j,n) * x[j], 2) - (r_d - r_f) * x[j] * (hx[j] - hx[j - 1])) / (hx[j - 1] * hx[j]) + 0.5 * r_d;
-          gx[j - 1] = (-(r_d - r_f) * x[j] * hx[j - 1] - std::pow(sigma_x(j,n) * x[j], 2)) / (hx[j] * (hx[j - 1] + hx[j]));
-
-          fx[j - 1] = v(i, j) / dt + 0.5 * rho * sigma_s(i,n) * sigma_x(j,n) * s[i] * x[j] *
-            (v(i + 1, j + 1) + v(i - 1, j - 1) - v(i - 1, j + 1) - v(i + 1, j - 1)) /
-              (hx[j - 1] * hs[i] + hx[j] * hs[i] + hx[j] * hs[i - 1] + hx[j - 1] * hs[i - 1]);
-        }
-
-        bx[n_x - 2] += gx[n_x - 2];
-        ax[0] = 0;
-        gx[n_x - 1] = 0;
-
-        NumericVector u_slice = thomas_algorithm(ax, bx, gx, fx);
-        for (int j = 1; j < n_x; j++) u(i, j) = u_slice[j - 1];
-      }
-
-      // Boundary conditions for u_new
-      // for (int i = 1; i < n_s + 1; i++) u(i, n_x) = u(i, n_x - 1);
-      // for (int j = 1; j < n_x + 1; j++) u(n_s, j) = u(n_s - 1, j);
-
-      // Mixed Boundary Condition Example (linear extrapolation)
-      for (int i = 0; i <= n_s; i++) {
-        u(i, n_x) = 2 * u(i, n_x - 1) - u(i, n_x - 2);  // Right boundary extrapolated
-      }
-      for (int j = 0; j <= n_x; j++) {
-        u(n_s, j) = 2 * u(n_s - 1, j) - u(n_s - 2, j);  // Top boundary extrapolated
-      }
-
-    }
-    // Interpolation step, needs C++ interpolation function equivalent to akima::bilinear
-    double result = bilinear_interpolation(s, x, u, s_0, x_0);  // Placeholder for interpolation function
-    return result;
+  // Terminal payoff V(T) = max(±(S·X − K), 0)
+  NumericMatrix U(n_s + 1, n_x + 1);
+  if (type == "call") {
+    for (int i = 0; i <= n_s; ++i)
+      for (int j = 0; j <= n_x; ++j)
+        U(i, j) = std::max(s[i] * x[j] - k, 0.0);
+  } else if (type == "put") {
+    for (int i = 0; i <= n_s; ++i)
+      for (int j = 0; j <= n_x; ++j)
+        U(i, j) = std::max(k - s[i] * x[j], 0.0);
+  } else {
+    stop("type must be \"call\" or \"put\"");
   }
+
+  // Tridiagonal buffers (S- then X-pass)
+  NumericVector aS(n_s - 1), bS(n_s - 1), cS(n_s - 1), fS(n_s - 1);
+  NumericVector aX(n_x - 1), bX(n_x - 1), cX(n_x - 1), fX(n_x - 1);
+
+  // Helpers: analytic Dirichlet far-field boundaries for product options
+  auto set_S_boundaries = [&](double tau_rem,
+                              NumericVector& leftS, NumericVector& rightS) {
+    leftS  = NumericVector(n_x + 1);
+    rightS = NumericVector(n_x + 1);
+    if (type == "call") {
+      for (int j = 0; j <= n_x; ++j) {
+        leftS[j]  = 0.0; // S -> 0
+        double up = std::max(s[n_s] * x[j] * std::exp(-q * tau_rem)
+                               - k * std::exp(-r_d * tau_rem), 0.0);
+        rightS[j] = up;  // S -> ∞
+      }
+    } else { // put
+      for (int j = 0; j <= n_x; ++j) {
+        leftS[j]  = k * std::exp(-r_d * tau_rem); // S -> 0
+        rightS[j] = 0.0;                          // S -> ∞
+      }
+    }
+  };
+
+  auto set_X_boundaries = [&](double tau_rem,
+                              NumericVector& leftX, NumericVector& rightX) {
+    leftX  = NumericVector(n_s + 1);
+    rightX = NumericVector(n_s + 1);
+    if (type == "call") {
+      for (int i = 0; i <= n_s; ++i) {
+        leftX[i]  = 0.0; // X -> 0
+        double up = std::max(s[i] * x[n_x] * std::exp(-q * tau_rem)
+                               - k * std::exp(-r_d * tau_rem), 0.0);
+        rightX[i] = up;  // X -> ∞
+      }
+    } else { // put
+      for (int i = 0; i <= n_s; ++i) {
+        leftX[i]  = k * std::exp(-r_d * tau_rem); // X -> 0
+        rightX[i] = 0.0;                          // X -> ∞
+      }
+    }
+  };
+
+  // --- Yanenko operator splitting over n_t steps (backward in time) ---
+  for (int n = 0; n < n_t; ++n) {
+    // time remaining AFTER this full step (for boundaries)
+    double tau_rem = (n_t - (n + 1)) * dt;
+
+    // Precompute Dirichlet boundaries for this step
+    NumericVector leftS, rightS, leftX, rightX;
+    set_S_boundaries(tau_rem, leftS, rightS);
+    set_X_boundaries(tau_rem, leftX, rightX);
+
+    // ===== Pass 1: implicit in S (per fixed j), explicit in X and cross =====
+    NumericMatrix V(n_s + 1, n_x + 1);
+    for (int j = 1; j < n_x; ++j) {
+      // Known S-boundary values for this column j
+      double L = leftS[j];
+      double R = rightS[j];
+
+      for (int i = 1; i < n_s; ++i) {
+        double h_im1 = hs[i - 1], h_i = hs[i];
+        double Si = s[i], Xj = x[j];
+
+        double sigS = sigma_s(i, n);
+        double sigX = sigma_x(j, n);
+
+        // *** NEW: domestic-measure drift of S ***
+        // mu_S = r_f - q - rho * sigma_S * sigma_X   (pointwise)
+        double muS = r_f - q - rho * sigS * sigX;
+
+        // S-direction coefficients on non-uniform mesh (replace (r_d - q) with muS)
+        aS[i - 1] = ( (muS * Si * h_i) - std::pow(sigS * Si, 2.0) ) / (h_im1 * (h_im1 + h_i));
+
+        bS[i - 1] = 1.0 / dt
+          + ( std::pow(sigS * Si, 2.0) - muS * Si * (h_i - h_im1) ) / (h_im1 * h_i)
+          + 0.5 * r_d;
+
+        cS[i - 1] = ( -(muS * Si * h_im1) - std::pow(sigS * Si, 2.0) ) / (h_i * (h_im1 + h_i));
+
+        // Explicit cross term (unchanged)
+        double denom_cross = (h_im1 * hx[j - 1] + h_i * hx[j] + h_i * hx[j - 1] + h_im1 * hx[j]);
+        double cross = 0.0;
+        if (denom_cross != 0.0) {
+          cross = 0.5 * rho * sigS * sigX * Si * Xj *
+            (U(i + 1, j + 1) + U(i - 1, j - 1) - U(i - 1, j + 1) - U(i + 1, j - 1)) / denom_cross;
+        }
+
+        fS[i - 1] = U(i, j) / dt + cross;
+      }
+
+      // Boundary contributions… (unchanged)
+      fS[0]       -= aS[0]       * L;
+      fS[n_s - 2] -= cS[n_s - 2] * R;
+      aS[0] = 0.0; cS[n_s - 2] = 0.0;
+
+      // Solve in S (unchanged)
+      NumericVector col = thomas_algorithm(aS, bS, cS, fS);
+      V(0, j)   = L;
+      V(n_s, j) = R;
+      for (int i = 1; i < n_s; ++i) V(i, j) = col[i - 1];
+    }
+
+    // Enforce outer-frame boundaries on V
+    for (int i = 0; i <= n_s; ++i) { V(i, 0) = leftX[i];  V(i, n_x) = rightX[i]; }
+    for (int j = 0; j <= n_x; ++j) { V(0, j) = leftS[j];  V(n_s, j) = rightS[j]; }
+
+    // ===== Pass 2: implicit in X (per fixed i), explicit in S and cross =====
+    NumericMatrix Unew(n_s + 1, n_x + 1);
+
+    for (int i = 1; i < n_s; ++i) {
+      double L = leftX[i];
+      double R = rightX[i];
+
+      for (int j = 1; j < n_x; ++j) {
+        double h_jm1 = hx[j - 1], h_j = hx[j];
+        double Si = s[i], Xj = x[j];
+
+        double sigS = sigma_s(i, n);
+        double sigX = sigma_x(j, n);
+
+        // X-direction coefficients on non-uniform mesh
+        aX[j - 1] = ((r_d - r_f) * Xj * h_j - std::pow(sigX * Xj, 2.0)) / (h_jm1 * (h_jm1 + h_j));
+        bX[j - 1] = 1.0 / dt
+        + (std::pow(sigX * Xj, 2.0) - (r_d - r_f) * Xj * (h_j - h_jm1)) / (h_jm1 * h_j)
+          + 0.5 * r_d;
+          cX[j - 1] = (-(r_d - r_f) * Xj * h_jm1 - std::pow(sigX * Xj, 2.0)) / (h_j * (h_jm1 + h_j));
+
+          // Explicit cross term using V
+          double denom_cross = (h_jm1 * hs[i - 1] + h_j * hs[i] + h_jm1 * hs[i - 1] + h_j * hs[i]);
+          double cross = 0.0;
+          if (denom_cross != 0.0) {
+            cross = 0.5 * rho * sigS * sigX * Si * Xj *
+              (V(i + 1, j + 1) + V(i - 1, j - 1) - V(i - 1, j + 1) - V(i + 1, j - 1)) / denom_cross;
+          }
+
+          fX[j - 1] = V(i, j) / dt + cross;
+      }
+
+      // Boundary contributions to RHS in X, then zero those coefficients
+      fX[0]         -= aX[0]       * L;
+      fX[n_x - 2]   -= cX[n_x - 2] * R;
+      aX[0]          = 0.0;
+      cX[n_x - 2]    = 0.0;
+
+      // Solve in X
+      NumericVector row = thomas_algorithm(aX, bX, cX, fX);
+      Unew(i, 0)   = L;
+      Unew(i, n_x) = R;
+      for (int j = 1; j < n_x; ++j) Unew(i, j) = row[j - 1];
+    }
+
+    // Enforce boundaries on Unew frame
+    for (int i = 0; i <= n_s; ++i) { Unew(i, 0) = leftX[i];  Unew(i, n_x) = rightX[i]; }
+    for (int j = 0; j <= n_x; ++j) { Unew(0, j) = leftS[j];  Unew(n_s, j) = rightS[j]; }
+
+    // Move to next time level
+    U = clone(Unew);
+  }
+
+  // Bilinear interpolation at (s_0, x_0)
+  return bilinear_interpolation(s, x, U, s_0, x_0);
+}
 
 }
 
-//' European Option Local Volatility 2D
+//' European Option 2D (local volatility)
 //'
-//' This function evaluates an European-style option on a common stock with local volatility in a foreing currency using finite differences.
+//' Prices a European option on an equity in a foreign currency using a 2D finite-difference PDE
+//' with time- and state-dependent local volatilities for both S and X.
 //'
-//' @param s_0 Stock spot price
-//' @param x_0 FX spot price
-//' @param k Strike price
-//' @param tau Time to expiry
-//' @param r_d Risk-free rate (domestic)
-//' @param r_f Risk-free rate (foreign)
-//' @param q Dividend yield
-//' @param sigma_s Local volatility matrix of the stock
-//' @param sigma_x Local volatility matrix of the FX
-//' @param rho Correlatin between the stock and the FX
-//' @param type Either "call" or "put"
-//' @param s_min Min value of the stock prices grid
-//' @param s_max Man value of the stock prices grid
-//' @param x_min Min value of the FX prices grid
-//' @param x_max Max value of the FX prices grid
-//' @param n_s Size of stock grid for finite difference grid
-//' @param n_x Size of FX grid for finite difference grid
-//' @param n_t Size of time grid for finite difference grid
-//' @param alpha Parameter that defines the uniformity of the grid
+//' @param s_0 Stock spot price.
+//' @param x_0 FX spot price (domestic per foreign).
+//' @param k Strike price (domestic currency).
+//' @param tau Time to expiry (in years).
+//' @param r_d Risk-free rate (domestic).
+//' @param r_f Risk-free rate (foreign).
+//' @param q Dividend yield.
+//' @param sigma_s Local volatility matrix for the stock of size (n_s + 1) x n_t.
+//' @param sigma_x Local volatility matrix for the FX of size (n_x + 1) x n_t.
+//' @param rho Correlation between the stock and the FX in `[-1, 1]`.
+//' @param type Either "call" or "put".
+//' @param s_min,s_max Min/Max of the stock grid.
+//' @param x_min,x_max Min/Max of the FX grid.
+//' @param n_s Number of intervals in stock grid (n_s + 1 nodes).
+//' @param n_x Number of intervals in FX grid (n_x + 1 nodes).
+//' @param n_t Number of time steps.
+//' @param alpha Grid clustering parameter for Tavella–Randall grids (> 0).
+//'
+//' @details
+//' Domestic-measure drift and discounting are applied as in the constant-vol solver, but with
+//' pointwise volatilities. In the S-direction, mu_S = r_f - q - rho * sigma_S * sigma_X (local).
+//' In the X-direction, drift is r_d - r_f. Far-field Dirichlet boundaries use exp(-q * tau) on S·X
+//' and exp(-r_d * tau) on K. When `sigma_s` and `sigma_x` are constant-valued matrices, prices
+//' should match the constant-vol solver up to numerical tolerance.
 //'
 //' @export
 // [[Rcpp::export]]

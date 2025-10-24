@@ -1,0 +1,14 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  R-CMD-check:
+    uses: r-lib/actions/.github/workflows/check-standard.yaml@v2
+    with:
+      use-public-rspm: true
+      cache-version: 1

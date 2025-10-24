@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{american_option_2d}
 \alias{american_option_2d}
-\title{American Option 2D}
+\title{American Option 2D (constant volatility, penalty method)}
 \usage{
 american_option_2d(
   s_0,
@@ -29,48 +29,50 @@ american_option_2d(
 )
 }
 \arguments{
-\item{s_0}{Stock spot price}
+\item{s_0}{Stock spot price.}
 
-\item{x_0}{FX spot price}
+\item{x_0}{FX spot price (domestic per foreign).}
 
-\item{k}{Strike price}
+\item{k}{Strike price (domestic currency).}
 
-\item{tau}{Time to expiry}
+\item{tau}{Time to expiry (in years).}
 
-\item{r_d}{Risk-free rate (domestic)}
+\item{r_d}{Risk-free rate (domestic).}
 
-\item{r_f}{Risk-free rate (foreign)}
+\item{r_f}{Risk-free rate (foreign).}
 
-\item{q}{Dividend yield}
+\item{q}{Dividend yield.}
 
-\item{sigma_s}{Volatility of the stock}
+\item{sigma_s}{Constant volatility of the stock.}
 
-\item{sigma_x}{Volatility of the FX}
+\item{sigma_x}{Constant volatility of the FX.}
 
-\item{rho}{Correlatin between the stock and the FX}
+\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
 
-\item{type}{Either "call" or "put"}
+\item{type}{Either "call" or "put".}
 
-\item{s_min}{Min value of the stock prices grid}
+\item{s_min, s_max}{Min/Max of the stock grid.}
 
-\item{s_max}{Man value of the stock prices grid}
+\item{x_min, x_max}{Min/Max of the FX grid.}
 
-\item{x_min}{Min value of the FX prices grid}
+\item{n_s}{Number of intervals in stock grid (n_s + 1 nodes).}
 
-\item{x_max}{Max value of the FX prices grid}
+\item{n_x}{Number of intervals in FX grid (n_x + 1 nodes).}
 
-\item{n_s}{Size of stock grid for finite difference grid}
+\item{n_t}{Number of time steps.}
 
-\item{n_x}{Size of FX grid for finite difference grid}
+\item{alpha}{Grid clustering parameter for Tavella–Randall grids (> 0).}
 
-\item{n_t}{Size of time grid for finite difference grid}
+\item{lambda}{Penalty parameter (> 1).}
 
-\item{alpha}{Parameter that defines the uniformity of the grid}
-
-\item{lambda}{Penalty parameter greater than 1}
-
-\item{tolerance}{Error tolerance}
+\item{tolerance}{Relative error tolerance for the penalty fixed-point iterations.}
 }
 \description{
-This function evaluates an American-style option on a common stock in a foreing currency using finite differences.
+Prices an American option on an equity quoted in a foreign currency using a 2D finite-difference PDE
+with Yanenko operator splitting and a penalty-projection scheme for the early exercise constraint.
+}
+\details{
+Domestic-measure drift and discounting are applied (mu_S = r_f - q - rho * sigma_s * sigma_x in S,
+r_d - r_f in X, discounting at r_d). Far-field Dirichlet boundaries use exp(-q * tau) on S·X and
+exp(-r_d * tau) on K. The penalty parameter is split across the two sub-steps.
 }

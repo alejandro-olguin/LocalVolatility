@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{american_option_lv}
 \alias{american_option_lv}
-\title{American Option Local Volatility 1D}
+\title{American Option 1D (local volatility, penalty method)}
 \usage{
 american_option_lv(
   s_0,
@@ -21,32 +21,31 @@ american_option_lv(
 )
 }
 \arguments{
-\item{s_0}{Stock spot price}
+\item{s_0}{Stock spot price.}
 
-\item{k}{Strike price}
+\item{k}{Strike price.}
 
-\item{tau}{Time to expiry}
+\item{tau}{Time to expiry (in years).}
 
-\item{r_d}{Risk-free rate (domestic)}
+\item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield}
+\item{q}{Dividend yield.}
 
-\item{sigma}{Local volatility matrix}
+\item{sigma}{Local volatility matrix sampled on the grid.}
 
-\item{type}{Either "call" or "put"}
+\item{type}{Either "call" or "put".}
 
-\item{s_min}{max value of the underlying prices grid}
+\item{s_min, s_max}{Min/Max of the underlying prices grid.}
 
-\item{s_max}{min value of the underlying prices grid}
+\item{n_s}{Number of intervals in the asset grid (n_s + 1 nodes).}
 
-\item{n_s}{Size of asset grid for finite difference grid}
+\item{n_t}{Number of time steps.}
 
-\item{n_t}{Size of time grid for finite difference grid}
+\item{lambda}{Penalty parameter (> 1).}
 
-\item{lambda}{Penalty parameter greater than 1}
-
-\item{tolerance}{Error tolerance}
+\item{tolerance}{Relative error tolerance for the penalty iterations.}
 }
 \description{
-This function evaluates an American-style option on a common stock with local volatility using finite differences.
+Prices an American option on a single equity with local volatility using operator splitting
+and a penalty-projection method for the early exercise constraint.
 }
