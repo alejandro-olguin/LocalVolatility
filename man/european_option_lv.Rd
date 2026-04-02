@@ -17,18 +17,22 @@ european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
 
 \item{q}{Dividend yield.}
 
-\item{sigma}{Local volatility matrix sampled on the grid; commonly (n_s + 1) x (n_t + 1) or
-(n_s + 1) x n_t depending on solver indexing.}
+\item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
+sampled on the spatial grid (rows) and time grid including both endpoints (columns).}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the asset grid.}
 
-\item{n_s}{Number of intervals in the asset grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in the asset grid (\code{n_s + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 }
+\value{
+Option price as a numeric scalar.
+}
 \description{
-Prices a European option on a single equity with local volatility using a 1D Crank–Nicolson
-finite-difference scheme, time-dependent boundaries, and linear interpolation at the spot.
+Prices a European option on a single equity with local volatility using a
+1D Crank-Nicolson finite-difference scheme, time-dependent Dirichlet
+boundaries, and linear interpolation at the spot.
 }

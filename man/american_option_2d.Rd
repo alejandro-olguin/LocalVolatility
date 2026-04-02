@@ -43,36 +43,41 @@ american_option_2d(
 
 \item{q}{Dividend yield.}
 
-\item{sigma_s}{Constant volatility of the stock.}
+\item{sigma_s}{Constant volatility of the stock (>= 0).}
 
-\item{sigma_x}{Constant volatility of the FX.}
+\item{sigma_x}{Constant volatility of the FX (>= 0).}
 
-\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
+\item{rho}{Correlation between the stock and the FX in \code{[-1, 1]}.}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the stock grid.}
 
 \item{x_min, x_max}{Min/Max of the FX grid.}
 
-\item{n_s}{Number of intervals in stock grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in stock grid (\code{n_s + 1} nodes).}
 
-\item{n_x}{Number of intervals in FX grid (n_x + 1 nodes).}
+\item{n_x}{Number of intervals in FX grid (\code{n_x + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 
-\item{alpha}{Grid clustering parameter for Tavella–Randall grids (> 0).}
+\item{alpha}{Grid clustering parameter for Tavella-Randall grids (> 0).}
 
-\item{lambda}{Penalty parameter (> 1).}
+\item{lambda}{Penalty parameter (> 0, typically 1e4 to 1e6).}
 
 \item{tolerance}{Relative error tolerance for the penalty fixed-point iterations.}
 }
+\value{
+Option price as a numeric scalar.
+}
 \description{
-Prices an American option on an equity quoted in a foreign currency using a 2D finite-difference PDE
-with Yanenko operator splitting and a penalty-projection scheme for the early exercise constraint.
+Prices an American option on an equity quoted in a foreign currency using a
+2D finite-difference PDE with Yanenko operator splitting and a
+penalty-projection scheme for the early exercise constraint.
 }
 \details{
-Domestic-measure drift and discounting are applied (mu_S = r_f - q - rho * sigma_s * sigma_x in S,
-r_d - r_f in X, discounting at r_d). Far-field Dirichlet boundaries use exp(-q * tau) on S·X and
-exp(-r_d * tau) on K. The penalty parameter is split across the two sub-steps.
+Domestic-measure dynamics: drift \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X}
+in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. The penalty parameter
+is split as \eqn{\lambda/2} across the two operator-splitting sub-steps.
+Maximum 200 penalty iterations per time step with a warning on non-convergence.
 }

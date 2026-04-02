@@ -3,21 +3,31 @@
 
 #' American Option 1D (local volatility, penalty method)
 #'
-#' Prices an American option on a single equity with local volatility using operator splitting
-#' and a penalty-projection method for the early exercise constraint.
+#' Prices an American option on a single equity with local volatility using
+#' Crank-Nicolson finite differences and a penalty-projection method for the
+#' early exercise constraint.
 #'
 #' @param s_0 Stock spot price.
 #' @param k Strike price.
 #' @param tau Time to expiry (in years).
 #' @param r_d Risk-free rate (domestic).
 #' @param q Dividend yield.
-#' @param sigma Local volatility matrix sampled on the grid.
-#' @param type Either "call" or "put".
+#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
+#'   sampled on the spatial grid (rows) and time grid including both endpoints (columns).
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the underlying prices grid.
-#' @param n_s Number of intervals in the asset grid (n_s + 1 nodes).
+#' @param n_s Number of intervals in the asset grid (\code{n_s + 1} nodes).
 #' @param n_t Number of time steps.
-#' @param lambda Penalty parameter (> 1).
-#' @param tolerance Relative error tolerance for the penalty iterations.
+#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
+#' @param tolerance Convergence tolerance for the penalty iterations.
+#'
+#' @return Option price as a numeric scalar.
+#'
+#' @details
+#' The solver uses the standard Black-Scholes PDE with time- and state-dependent
+#' volatility \eqn{\sigma(S, t)}, discretised via Crank-Nicolson. The early exercise
+#' constraint is enforced through a penalty-projection fixed-point iteration at each
+#' time step, with a maximum of 200 iterations and a warning on non-convergence.
 #'
 #' @export
 american_option_lv <- function(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t, lambda, tolerance) {
@@ -26,20 +36,23 @@ american_option_lv <- function(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n
 
 #' European Option 1D (local volatility)
 #'
-#' Prices a European option on a single equity with local volatility using a 1D Crank–Nicolson
-#' finite-difference scheme, time-dependent boundaries, and linear interpolation at the spot.
+#' Prices a European option on a single equity with local volatility using a
+#' 1D Crank-Nicolson finite-difference scheme, time-dependent Dirichlet
+#' boundaries, and linear interpolation at the spot.
 #'
 #' @param s_0 Stock spot price.
 #' @param k Strike price.
 #' @param tau Time to expiry (in years).
 #' @param r_d Risk-free rate (domestic).
 #' @param q Dividend yield.
-#' @param sigma Local volatility matrix sampled on the grid; commonly (n_s + 1) x (n_t + 1) or
-#'   (n_s + 1) x n_t depending on solver indexing.
-#' @param type Either "call" or "put".
+#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
+#'   sampled on the spatial grid (rows) and time grid including both endpoints (columns).
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the asset grid.
-#' @param n_s Number of intervals in the asset grid (n_s + 1 nodes).
+#' @param n_s Number of intervals in the asset grid (\code{n_s + 1} nodes).
 #' @param n_t Number of time steps.
+#'
+#' @return Option price as a numeric scalar.
 #'
 #' @export
 european_option_lv <- function(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t) {
@@ -48,8 +61,10 @@ european_option_lv <- function(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n
 
 #' American Option 2D (local volatility, penalty method)
 #'
-#' Prices an American option on an equity in a foreign currency with local volatilities for both S and X.
-#' Uses operator splitting and a penalty-projection scheme for the obstacle.
+#' Prices an American option on an equity in a foreign currency with local
+#' volatilities for both S and X, using Yanenko operator splitting and a
+#' penalty-projection scheme for the early exercise constraint on a
+#' non-uniform Tavella-Randall grid.
 #'
 #' @param s_0 Stock spot price.
 #' @param x_0 FX spot price (domestic per foreign).
@@ -58,23 +73,27 @@ european_option_lv <- function(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Local volatility matrix for the stock of size (n_s + 1) x n_t.
-#' @param sigma_x Local volatility matrix for the FX of size (n_x + 1) x n_t.
-#' @param rho Correlation between the stock and the FX in `[-1, 1]`.
-#' @param type Either "call" or "put".
+#' @param sigma_s Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.
+#' @param sigma_x Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.
+#' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
 #' @param x_min,x_max Min/Max of the FX grid.
-#' @param n_s Number of intervals in stock grid (n_s + 1 nodes).
-#' @param n_x Number of intervals in FX grid (n_x + 1 nodes).
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes).
+#' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
-#' @param alpha Grid clustering parameter for Tavella–Randall grids (> 0).
-#' @param lambda Penalty parameter (> 1).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 #' @param tolerance Relative error tolerance for the penalty fixed-point iterations.
 #'
+#' @return Option price as a numeric scalar.
+#'
 #' @details
-#' Domestic-measure drift and discounting as in the constant-vol case, using local pointwise vols:
-#' mu_S = r_f - q - rho * sigma_S * sigma_X in S, r_d - r_f in X, discounting at r_d. Far-field
-#' boundaries use exp(-q * tau) on S·X and exp(-r_d * tau) on K.
+#' Domestic-measure dynamics with pointwise volatilities:
+#' \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X} in S, \eqn{r_d - r_f} in X,
+#' discounting at \eqn{r_d}. The penalty parameter is split as \eqn{\lambda/2}
+#' across the two operator-splitting sub-steps. Maximum 200 penalty iterations
+#' per time step with a warning on non-convergence.
 #'
 #' @export
 american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance) {
@@ -83,8 +102,9 @@ american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 
 #' American Option 2D (constant volatility, penalty method)
 #'
-#' Prices an American option on an equity quoted in a foreign currency using a 2D finite-difference PDE
-#' with Yanenko operator splitting and a penalty-projection scheme for the early exercise constraint.
+#' Prices an American option on an equity quoted in a foreign currency using a
+#' 2D finite-difference PDE with Yanenko operator splitting and a
+#' penalty-projection scheme for the early exercise constraint.
 #'
 #' @param s_0 Stock spot price.
 #' @param x_0 FX spot price (domestic per foreign).
@@ -93,32 +113,38 @@ american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Constant volatility of the stock.
-#' @param sigma_x Constant volatility of the FX.
-#' @param rho Correlation between the stock and the FX in `[-1, 1]`.
-#' @param type Either "call" or "put".
+#' @param sigma_s Constant volatility of the stock (>= 0).
+#' @param sigma_x Constant volatility of the FX (>= 0).
+#' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
 #' @param x_min,x_max Min/Max of the FX grid.
-#' @param n_s Number of intervals in stock grid (n_s + 1 nodes).
-#' @param n_x Number of intervals in FX grid (n_x + 1 nodes).
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes).
+#' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
-#' @param alpha Grid clustering parameter for Tavella–Randall grids (> 0).
-#' @param lambda Penalty parameter (> 1).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 #' @param tolerance Relative error tolerance for the penalty fixed-point iterations.
 #'
-#' @details
-#' Domestic-measure drift and discounting are applied (mu_S = r_f - q - rho * sigma_s * sigma_x in S,
-#' r_d - r_f in X, discounting at r_d). Far-field Dirichlet boundaries use exp(-q * tau) on S·X and
-#' exp(-r_d * tau) on K. The penalty parameter is split across the two sub-steps.
+#' @return Option price as a numeric scalar.
 #'
+#' @details
+#' Domestic-measure dynamics: drift \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X}
+#' in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. The penalty parameter
+#' is split as \eqn{\lambda/2} across the two operator-splitting sub-steps.
+#' Maximum 200 penalty iterations per time step with a warning on non-convergence.
+#'
+#' @export
 american_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance) {
     .Call(`_LocalVolatility_american_option_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance)
 }
 
 #' European Option 2D (local volatility)
 #'
-#' Prices a European option on an equity in a foreign currency using a 2D finite-difference PDE
-#' with time- and state-dependent local volatilities for both S and X.
+#' Prices a European option on an equity in a foreign currency using a 2D
+#' finite-difference PDE with time- and state-dependent local volatilities
+#' for both S and X, Yanenko operator splitting, and a centered mixed-derivative
+#' stencil on a non-uniform Tavella-Randall grid.
 #'
 #' @param s_0 Stock spot price.
 #' @param x_0 FX spot price (domestic per foreign).
@@ -127,23 +153,25 @@ american_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, 
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Local volatility matrix for the stock of size (n_s + 1) x n_t.
-#' @param sigma_x Local volatility matrix for the FX of size (n_x + 1) x n_t.
-#' @param rho Correlation between the stock and the FX in `[-1, 1]`.
-#' @param type Either "call" or "put".
+#' @param sigma_s Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.
+#' @param sigma_x Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.
+#' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
 #' @param x_min,x_max Min/Max of the FX grid.
-#' @param n_s Number of intervals in stock grid (n_s + 1 nodes).
-#' @param n_x Number of intervals in FX grid (n_x + 1 nodes).
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes).
+#' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
-#' @param alpha Grid clustering parameter for Tavella–Randall grids (> 0).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#'
+#' @return Option price as a numeric scalar.
 #'
 #' @details
-#' Domestic-measure drift and discounting are applied as in the constant-vol solver, but with
-#' pointwise volatilities. In the S-direction, mu_S = r_f - q - rho * sigma_S * sigma_X (local).
-#' In the X-direction, drift is r_d - r_f. Far-field Dirichlet boundaries use exp(-q * tau) on S·X
-#' and exp(-r_d * tau) on K. When `sigma_s` and `sigma_x` are constant-valued matrices, prices
-#' should match the constant-vol solver up to numerical tolerance.
+#' Domestic-measure dynamics with pointwise volatilities:
+#' \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X} in S, \eqn{r_d - r_f} in X,
+#' discounting at \eqn{r_d}. When \code{sigma_s} and \code{sigma_x} are
+#' constant-valued matrices, prices match the constant-vol solver to numerical
+#' tolerance.
 #'
 #' @export
 european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
@@ -152,8 +180,10 @@ european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 
 #' European Option 2D (constant volatility)
 #'
-#' Prices a European option on an equity quoted in a foreign currency using a 2D finite-difference PDE
-#' with Yanenko operator splitting, constant volatilities (sigma_s, sigma_x), and a centered mixed-derivative.
+#' Prices a European option on an equity quoted in a foreign currency using a
+#' 2D finite-difference PDE with Yanenko operator splitting, constant
+#' volatilities, and a centered mixed-derivative stencil on a non-uniform
+#' Tavella-Randall grid.
 #'
 #' @param s_0 Stock spot price.
 #' @param x_0 FX spot price (domestic per foreign).
@@ -162,22 +192,24 @@ european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Constant volatility of the stock.
-#' @param sigma_x Constant volatility of the FX.
-#' @param rho Correlation between the stock and the FX in `[-1, 1]`.
-#' @param type Either "call" or "put".
+#' @param sigma_s Constant volatility of the stock (>= 0).
+#' @param sigma_x Constant volatility of the FX (>= 0).
+#' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
+#' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
 #' @param x_min,x_max Min/Max of the FX grid.
-#' @param n_s Number of intervals in stock grid (n_s + 1 nodes).
-#' @param n_x Number of intervals in FX grid (n_x + 1 nodes).
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes).
+#' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
-#' @param alpha Grid clustering parameter for Tavella–Randall grids (> 0).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#'
+#' @return Option price as a numeric scalar.
 #'
 #' @details
-#' Domestic-measure drift and discounting are applied. In the S-direction, the drift is
-#' mu_S = r_f - q - rho * sigma_s * sigma_x. In the X-direction, the drift is r_d - r_f, and
-#' discounting is at r_d. Far-field Dirichlet boundaries use exp(-q * tau) on the S·X term and
-#' exp(-r_d * tau) on K. The spot (s_0, x_0) price is obtained via bilinear interpolation.
+#' Domestic-measure dynamics: drift \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X}
+#' in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. Far-field Dirichlet
+#' boundaries use \eqn{e^{-(r_f + q)\tau}} on the \eqn{S \cdot X} leg and
+#' \eqn{e^{-r_d \tau}} on \eqn{K}.
 #'
 #' @export
 european_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
@@ -225,6 +257,73 @@ european_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, 
 #' @export
 european_option_cf_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type) {
     .Call(`_LocalVolatility_european_option_cf_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type)
+}
+
+#' Batch-price European options under local volatility (1D)
+#'
+#' Prices multiple European options that share the same local volatility surface
+#' and PDE grid in a single backward Crank-Nicolson sweep. Much faster than
+#' calling \code{\link{european_option_lv}} in a loop because the tridiagonal
+#' LHS is factored once per time step and reused across all options.
+#'
+#' @param spots Numeric vector of spot prices (one per option).
+#' @param strikes Numeric vector of strike prices.
+#' @param taus Numeric vector of times to expiry (years).
+#' @param r_ds Numeric vector of domestic risk-free rates.
+#' @param r_fs Numeric vector of foreign/dividend rates.
+#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+#' @param types Character vector, each element \code{"call"} or \code{"put"}.
+#' @param s_min,s_max Domain bounds for the asset grid.
+#' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
+#' @param n_t Number of time steps.
+#'
+#' @return Numeric vector of option prices (same length as \code{strikes}).
+#'
+#' @details
+#' All options must lie on the same spatial domain \code{[s_min, s_max]} and
+#' use the same sigma surface. The solver steps backward from \code{max(taus)}
+#' and extracts each option's price at the time step closest to its maturity.
+#' The tridiagonal Crank-Nicolson system is factored once per time step (the
+#' LHS depends only on sigma and the grid, not on the strike), and each
+#' option's RHS is solved via forward/back substitution — O(n_s) per option
+#' per time step instead of O(2 * n_s) for a full Thomas solve.
+#'
+#' @export
+batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t) {
+    .Call(`_LocalVolatility_batch_price_european_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t)
+}
+
+#' Batch-price American options under local volatility (1D)
+#'
+#' Prices multiple American options that share the same local volatility surface
+#' and PDE grid. Each option is an independent backward Crank-Nicolson solve
+#' with penalty-projection for early exercise, parallelized across options
+#' via OpenMP.
+#'
+#' @param spots Numeric vector of spot prices (one per option).
+#' @param strikes Numeric vector of strike prices.
+#' @param taus Numeric vector of times to expiry (years).
+#' @param r_ds Numeric vector of domestic risk-free rates.
+#' @param qs Numeric vector of dividend yields.
+#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+#' @param types Character vector, each element \code{"call"} or \code{"put"}.
+#' @param s_min,s_max Domain bounds for the asset grid.
+#' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
+#' @param n_t Number of time steps.
+#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
+#' @param tolerance Convergence tolerance for penalty iterations.
+#'
+#' @return Numeric vector of option prices (same length as \code{strikes}).
+#'
+#' @details
+#' Each option is solved independently using the same sigma surface and grid.
+#' The solver uses Crank-Nicolson with a penalty-projection fixed-point
+#' iteration for the American constraint, capped at 200 iterations per time
+#' step. Options are solved in parallel across CPU cores using std::thread.
+#'
+#' @export
+batch_price_american_lv <- function(spots, strikes, taus, r_ds, qs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance) {
+    .Call(`_LocalVolatility_batch_price_american_lv`, spots, strikes, taus, r_ds, qs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance)
 }
 
 #' Generate a sequence based on the Tavella and Randall method

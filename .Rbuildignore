@@ -14,3 +14,4 @@
 ^\.DS_Store$
 ^\.lintr$
 ^CONTRIBUTING\.md$
+^run_calibration_benchmark\.R$

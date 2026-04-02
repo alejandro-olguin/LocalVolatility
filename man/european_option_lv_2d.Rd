@@ -41,34 +41,39 @@ european_option_lv_2d(
 
 \item{q}{Dividend yield.}
 
-\item{sigma_s}{Local volatility matrix for the stock of size (n_s + 1) x n_t.}
+\item{sigma_s}{Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.}
 
-\item{sigma_x}{Local volatility matrix for the FX of size (n_x + 1) x n_t.}
+\item{sigma_x}{Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.}
 
-\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
+\item{rho}{Correlation between the stock and the FX in \code{[-1, 1]}.}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the stock grid.}
 
 \item{x_min, x_max}{Min/Max of the FX grid.}
 
-\item{n_s}{Number of intervals in stock grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in stock grid (\code{n_s + 1} nodes).}
 
-\item{n_x}{Number of intervals in FX grid (n_x + 1 nodes).}
+\item{n_x}{Number of intervals in FX grid (\code{n_x + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 
-\item{alpha}{Grid clustering parameter for Tavella–Randall grids (> 0).}
+\item{alpha}{Grid clustering parameter for Tavella-Randall grids (> 0).}
+}
+\value{
+Option price as a numeric scalar.
 }
 \description{
-Prices a European option on an equity in a foreign currency using a 2D finite-difference PDE
-with time- and state-dependent local volatilities for both S and X.
+Prices a European option on an equity in a foreign currency using a 2D
+finite-difference PDE with time- and state-dependent local volatilities
+for both S and X, Yanenko operator splitting, and a centered mixed-derivative
+stencil on a non-uniform Tavella-Randall grid.
 }
 \details{
-Domestic-measure drift and discounting are applied as in the constant-vol solver, but with
-pointwise volatilities. In the S-direction, mu_S = r_f - q - rho * sigma_S * sigma_X (local).
-In the X-direction, drift is r_d - r_f. Far-field Dirichlet boundaries use exp(-q * tau) on S·X
-and exp(-r_d * tau) on K. When \code{sigma_s} and \code{sigma_x} are constant-valued matrices, prices
-should match the constant-vol solver up to numerical tolerance.
+Domestic-measure dynamics with pointwise volatilities:
+\eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X} in S, \eqn{r_d - r_f} in X,
+discounting at \eqn{r_d}. When \code{sigma_s} and \code{sigma_x} are
+constant-valued matrices, prices match the constant-vol solver to numerical
+tolerance.
 }

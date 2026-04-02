@@ -1,14 +1,15 @@
 Package: LocalVolatility
 Type: Package
 Title: Pricing Engines for Local Volatility Models
-Version: 2.0.0
-Date: 2025-10-24
+Version: 2.2.0
+Date: 2026-04-01
 Encoding: UTF-8
 Authors@R: 
 	person("Alejandro", "Olguin", email = "alejandro_olguin@icloud.com", role = c("aut", "cre"))
 Description: Finite-difference PDE pricing engines for local volatility models in 1D and 2D,
 	covering European and American options with constant and local volatilities. Implemented in C++
-	via Rcpp, including Tavella–Randall grids, operator splitting, and a penalty method.
+	via Rcpp, including Tavella–Randall grids, operator splitting, a penalty method, and
+	calibration-optimized batch solvers with pre-factored Thomas algorithm and thread parallelism.
 License: GPL (>= 2)
 URL: https://github.com/alejandro-olguin/LocalVolatility
 BugReports: https://github.com/alejandro-olguin/LocalVolatility/issues
