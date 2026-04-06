@@ -11,7 +11,7 @@ double european_option_lv(double s_0,
                           double k,
                           double tau,
                           double r_d,
-                          double q,
+                          double r_f,
                           NumericMatrix sigma,
                           String type,
                           double s_min,
@@ -41,7 +41,7 @@ double european_option_lv(double s_0,
     for (int n = 0; n <= n_t; ++n) {
       const double t_rem = (n_t - n) * dt;
       u_bound[n] = 0.0;  // S -> 0
-      l_bound[n] = std::max(s_max * std::exp(-q * t_rem)
+      l_bound[n] = std::max(s_max * std::exp(-r_f * t_rem)
                               - k * std::exp(-r_d * t_rem), 0.0);
     }
 
@@ -81,14 +81,14 @@ double european_option_lv(double s_0,
       const double alpha_np = 0.5 * sig_np1 * sig_np1 * S_i * S_i;
 
       // CN coefficients (implicit part at t_n)
-      a[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) - (r_d - q) * S_i / (2.0 * ds));
+      a[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) - (r_d - r_f) * S_i / (2.0 * ds));
       b[i - 1] =  1.0      + 0.5 * dt * (2.0 * alpha_n / (ds * ds) + r_d);
-      c[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) + (r_d - q) * S_i / (2.0 * ds));
+      c[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) + (r_d - r_f) * S_i / (2.0 * ds));
 
       // RHS from explicit part at t_{n+1}
-      d[i - 1] =  0.5 * dt * (alpha_np / (ds * ds) - (r_d - q) * S_i / (2.0 * ds)) * old_prices[i - 1]
+      d[i - 1] =  0.5 * dt * (alpha_np / (ds * ds) - (r_d - r_f) * S_i / (2.0 * ds)) * old_prices[i - 1]
         + (1.0 - 0.5 * dt * (2.0 * alpha_np / (ds * ds) + r_d))                     * old_prices[i]
-        + 0.5 * dt * (alpha_np / (ds * ds) + (r_d - q) * S_i / (2.0 * ds))          * old_prices[i + 1];
+        + 0.5 * dt * (alpha_np / (ds * ds) + (r_d - r_f) * S_i / (2.0 * ds))          * old_prices[i + 1];
     }
 
     // Boundary contributions to RHS
@@ -125,7 +125,7 @@ double european_option_lv(double s_0,
 //' @param k Strike price.
 //' @param tau Time to expiry (in years).
 //' @param r_d Risk-free rate (domestic).
-//' @param q Dividend yield.
+//' @param r_f Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).
 //' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
 //'   sampled on the spatial grid (rows) and time grid including both endpoints (columns).
 //' @param type Either \code{"call"} or \code{"put"}.
@@ -141,7 +141,7 @@ double european_option_lv(double s_0,
                           double k,
                           double tau,
                           double r_d,
-                          double q,
+                          double r_f,
                           NumericMatrix sigma,
                           String type,
                           double s_min,
@@ -149,6 +149,6 @@ double european_option_lv(double s_0,
                           int n_s,
                           int n_t) {
 
-  return LocalVolatility::european_option_lv(s_0, k, tau, r_d, q, sigma, type,
+  return LocalVolatility::european_option_lv(s_0, k, tau, r_d, r_f, sigma, type,
                                              s_min, s_max, n_s, n_t);
 }

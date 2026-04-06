@@ -24,17 +24,17 @@ namespace LocalVolatility {
         }
     }
 
-    inline double american_option_lv(double s_0, double k, double tau, double r_d, double q, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance) {
-        typedef SEXP(*Ptr_american_option_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_american_option_lv p_american_option_lv = NULL;
-        if (p_american_option_lv == NULL) {
-            validateSignature("double(*american_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int,double,double)");
-            p_american_option_lv = (Ptr_american_option_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_american_option_lv");
+    inline double american_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha, double lambda, double tolerance) {
+        typedef SEXP(*Ptr_american_option_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_american_option_2d p_american_option_2d = NULL;
+        if (p_american_option_2d == NULL) {
+            validateSignature("double(*american_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double,double,double)");
+            p_american_option_2d = (Ptr_american_option_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_american_option_2d");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_american_option_lv(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
+            rcpp_result_gen = p_american_option_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_x)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -45,17 +45,17 @@ namespace LocalVolatility {
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
-    inline double european_option_lv(double s_0, double k, double tau, double r_d, double q, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t) {
-        typedef SEXP(*Ptr_european_option_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_european_option_lv p_european_option_lv = NULL;
-        if (p_european_option_lv == NULL) {
-            validateSignature("double(*european_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int)");
-            p_european_option_lv = (Ptr_european_option_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_lv");
+    inline double american_option_lv(double s_0, double k, double tau, double r_d, double r_f, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance) {
+        typedef SEXP(*Ptr_american_option_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_american_option_lv p_american_option_lv = NULL;
+        if (p_american_option_lv == NULL) {
+            validateSignature("double(*american_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int,double,double)");
+            p_american_option_lv = (Ptr_american_option_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_american_option_lv");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_european_option_lv(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)));
+            rcpp_result_gen = p_american_option_lv(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -87,17 +87,101 @@ namespace LocalVolatility {
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
-    inline double american_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha, double lambda, double tolerance) {
-        typedef SEXP(*Ptr_american_option_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_american_option_2d p_american_option_2d = NULL;
-        if (p_american_option_2d == NULL) {
-            validateSignature("double(*american_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double,double,double)");
-            p_american_option_2d = (Ptr_american_option_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_american_option_2d");
+    inline Rcpp::NumericVector batch_price_european_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t) {
+        typedef SEXP(*Ptr_batch_price_european_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_batch_price_european_lv p_batch_price_european_lv = NULL;
+        if (p_batch_price_european_lv == NULL) {
+            validateSignature("Rcpp::NumericVector(*batch_price_european_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int)");
+            p_batch_price_european_lv = (Ptr_batch_price_european_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_batch_price_european_lv");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_american_option_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_x)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
+            rcpp_result_gen = p_batch_price_european_lv(Shield<SEXP>(Rcpp::wrap(spots)), Shield<SEXP>(Rcpp::wrap(strikes)), Shield<SEXP>(Rcpp::wrap(taus)), Shield<SEXP>(Rcpp::wrap(r_ds)), Shield<SEXP>(Rcpp::wrap(r_fs)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(types)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
+    }
+
+    inline Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance) {
+        typedef SEXP(*Ptr_batch_price_american_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_batch_price_american_lv p_batch_price_american_lv = NULL;
+        if (p_batch_price_american_lv == NULL) {
+            validateSignature("Rcpp::NumericVector(*batch_price_american_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int,double,double)");
+            p_batch_price_american_lv = (Ptr_batch_price_american_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_batch_price_american_lv");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_batch_price_american_lv(Shield<SEXP>(Rcpp::wrap(spots)), Shield<SEXP>(Rcpp::wrap(strikes)), Shield<SEXP>(Rcpp::wrap(taus)), Shield<SEXP>(Rcpp::wrap(r_ds)), Shield<SEXP>(Rcpp::wrap(r_fs)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(types)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
+    }
+
+    inline double european_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha) {
+        typedef SEXP(*Ptr_european_option_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_european_option_2d p_european_option_2d = NULL;
+        if (p_european_option_2d == NULL) {
+            validateSignature("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
+            p_european_option_2d = (Ptr_european_option_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_2d");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_european_option_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_x)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(alpha)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<double >(rcpp_result_gen);
+    }
+
+    inline double european_option_cf_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, int adr_ratio) {
+        typedef SEXP(*Ptr_european_option_cf_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_european_option_cf_2d p_european_option_cf_2d = NULL;
+        if (p_european_option_cf_2d == NULL) {
+            validateSignature("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,String,int)");
+            p_european_option_cf_2d = (Ptr_european_option_cf_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_cf_2d");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_european_option_cf_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(adr_ratio)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<double >(rcpp_result_gen);
+    }
+
+    inline double european_option_lv(double s_0, double k, double tau, double r_d, double r_f, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t) {
+        typedef SEXP(*Ptr_european_option_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_european_option_lv p_european_option_lv = NULL;
+        if (p_european_option_lv == NULL) {
+            validateSignature("double(*european_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int)");
+            p_european_option_lv = (Ptr_european_option_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_lv");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_european_option_lv(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -129,91 +213,7 @@ namespace LocalVolatility {
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
-    inline double european_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha) {
-        typedef SEXP(*Ptr_european_option_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_european_option_2d p_european_option_2d = NULL;
-        if (p_european_option_2d == NULL) {
-            validateSignature("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
-            p_european_option_2d = (Ptr_european_option_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_2d");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_european_option_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_x)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(alpha)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<double >(rcpp_result_gen);
-    }
-
-    inline double european_option_cf_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, int n, String type) {
-        typedef SEXP(*Ptr_european_option_cf_2d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_european_option_cf_2d p_european_option_cf_2d = NULL;
-        if (p_european_option_cf_2d == NULL) {
-            validateSignature("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,int,String)");
-            p_european_option_cf_2d = (Ptr_european_option_cf_2d)R_GetCCallable("LocalVolatility", "_LocalVolatility_european_option_cf_2d");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_european_option_cf_2d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(sigma_s)), Shield<SEXP>(Rcpp::wrap(sigma_x)), Shield<SEXP>(Rcpp::wrap(rho)), Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(type)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<double >(rcpp_result_gen);
-    }
-
-    inline Rcpp::NumericVector batch_price_european_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t) {
-        typedef SEXP(*Ptr_batch_price_european_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_batch_price_european_lv p_batch_price_european_lv = NULL;
-        if (p_batch_price_european_lv == NULL) {
-            validateSignature("Rcpp::NumericVector(*batch_price_european_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int)");
-            p_batch_price_european_lv = (Ptr_batch_price_european_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_batch_price_european_lv");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_batch_price_european_lv(Shield<SEXP>(Rcpp::wrap(spots)), Shield<SEXP>(Rcpp::wrap(strikes)), Shield<SEXP>(Rcpp::wrap(taus)), Shield<SEXP>(Rcpp::wrap(r_ds)), Shield<SEXP>(Rcpp::wrap(r_fs)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(types)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
-    }
-
-    inline Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& qs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance) {
-        typedef SEXP(*Ptr_batch_price_american_lv)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_batch_price_american_lv p_batch_price_american_lv = NULL;
-        if (p_batch_price_american_lv == NULL) {
-            validateSignature("Rcpp::NumericVector(*batch_price_american_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int,double,double)");
-            p_batch_price_american_lv = (Ptr_batch_price_american_lv)R_GetCCallable("LocalVolatility", "_LocalVolatility_batch_price_american_lv");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_batch_price_american_lv(Shield<SEXP>(Rcpp::wrap(spots)), Shield<SEXP>(Rcpp::wrap(strikes)), Shield<SEXP>(Rcpp::wrap(taus)), Shield<SEXP>(Rcpp::wrap(r_ds)), Shield<SEXP>(Rcpp::wrap(qs)), Shield<SEXP>(Rcpp::wrap(sigma)), Shield<SEXP>(Rcpp::wrap(types)), Shield<SEXP>(Rcpp::wrap(s_min)), Shield<SEXP>(Rcpp::wrap(s_max)), Shield<SEXP>(Rcpp::wrap(n_s)), Shield<SEXP>(Rcpp::wrap(n_t)), Shield<SEXP>(Rcpp::wrap(lambda)), Shield<SEXP>(Rcpp::wrap(tolerance)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
-    }
-
-    inline NumericVector tavella_randall(double x0, double alpha, double x_min, double x_max, int n) {
+    inline NumericVector tavella_randall(double x_0, double alpha, double x_min, double x_max, int n_grid) {
         typedef SEXP(*Ptr_tavella_randall)(SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_tavella_randall p_tavella_randall = NULL;
         if (p_tavella_randall == NULL) {
@@ -223,7 +223,7 @@ namespace LocalVolatility {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_tavella_randall(Shield<SEXP>(Rcpp::wrap(x0)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n)));
+            rcpp_result_gen = p_tavella_randall(Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(alpha)), Shield<SEXP>(Rcpp::wrap(x_min)), Shield<SEXP>(Rcpp::wrap(x_max)), Shield<SEXP>(Rcpp::wrap(n_grid)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

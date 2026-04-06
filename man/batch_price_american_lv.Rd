@@ -9,7 +9,7 @@ batch_price_american_lv(
   strikes,
   taus,
   r_ds,
-  qs,
+  r_fs,
   sigma,
   types,
   s_min,
@@ -29,7 +29,7 @@ batch_price_american_lv(
 
 \item{r_ds}{Numeric vector of domestic risk-free rates.}
 
-\item{qs}{Numeric vector of dividend yields.}
+\item{r_fs}{Numeric vector of foreign risk-free rates or cost-of-carry rates.}
 
 \item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.}
 

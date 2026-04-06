@@ -15,8 +15,8 @@ european_option_cf_2d(
   sigma_s,
   sigma_x,
   rho,
-  n,
-  type
+  type,
+  adr_ratio
 )
 }
 \arguments{
@@ -38,18 +38,18 @@ european_option_cf_2d(
 
 \item{sigma_x}{Constant volatility of the FX.}
 
-\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
+\item{rho}{Correlation between the stock and the FX in \code{[-1, 1]}.}
 
-\item{n}{ADR ratio (shares per ADR), usually >= 1.}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
-\item{type}{Either "call" or "put" (case-insensitive).}
+\item{adr_ratio}{ADR ratio (shares per ADR), usually >= 1.}
 }
 \value{
 Option price as a numeric scalar.
 }
 \description{
-Closed-form Black–Scholes price for a European option on an ADR whose
-underlying is the product S·X scaled by the ADR ratio n: ADR = (S·X)/n.
+Closed-form Black-Scholes price for a European option on an ADR whose
+underlying is the product S\emph{X scaled by the ADR ratio: ADR = (S}X)/adr_ratio.
 Assumes constant volatilities for S and X and correlation rho. The
 effective ADR log-volatility is
 sigma_adr = sqrt(sigma_s^2 + sigma_x^2 + 2 * rho * sigma_s * sigma_x).
@@ -59,14 +59,14 @@ The domestic-measure discounting is used: SX leg discounted by exp(-q * tau),
 strike leg by exp(-r_d * tau). Note r_f does not enter the closed form directly
 but is kept for API symmetry with PDE solvers.
 
-This is the standard Black–Scholes formula applied to ADR = (S·X)/n with
-log-normal dynamics under the domestic measure. Let ADR_0 = (s_0 * x_0)/n and
+This is the standard Black-Scholes formula applied to ADR = (S*X)/adr_ratio with
+log-normal dynamics under the domestic measure. Let ADR_0 = (s_0 * x_0)/adr_ratio and
 sigma_adr as above. Then
-\verb{d1 = [ln(ADR_0 / K) + (r_d - q + 0.5 * sigma_adr^2) * tau] / (sigma_adr * sqrt(tau))},
+\code{d1 = [ln(ADR_0 / K) + (r_d - q + 0.5 * sigma_adr^2) * tau] / (sigma_adr * sqrt(tau))},
 \code{d2 = d1 - sigma_adr * sqrt(tau)}.
-The call is ADR_0 \verb{e^\{-q tau\} N(d1) - K e^\{-r_d tau\} N(d2)}; the put uses put-call parity.
+The call is \code{ADR_0 * exp(-q*tau) * N(d1) - K * exp(-r_d*tau) * N(d2)}; the put uses put-call parity.
 }
 \examples{
-european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01, 0.2, 0.1, 0.3, 1, "call")
+european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01, 0.2, 0.1, 0.3, "call", 1)
 
 }

@@ -4,7 +4,7 @@
 \alias{european_option_lv}
 \title{European Option 1D (local volatility)}
 \usage{
-european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
+european_option_lv(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t)
 }
 \arguments{
 \item{s_0}{Stock spot price.}
@@ -15,7 +15,7 @@ european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
 
 \item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield.}
+\item{r_f}{Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).}
 
 \item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
 sampled on the spatial grid (rows) and time grid including both endpoints (columns).}

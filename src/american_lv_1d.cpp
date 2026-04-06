@@ -11,7 +11,7 @@ double american_option_lv(double s_0,
                           double k,
                           double tau,
                           double r_d,
-                          double q,
+                          double r_f,
                           NumericMatrix sigma,
                           String type,
                           double s_min,
@@ -47,7 +47,7 @@ double american_option_lv(double s_0,
       const double t_rem = (n_t - n) * dt;
       u_bound[n] = 0.0;  // S -> 0
       // Far-field European asymptote (penalty handles early exercise)
-      l_bound[n] = std::max(s_max * std::exp(-q * t_rem)
+      l_bound[n] = std::max(s_max * std::exp(-r_f * t_rem)
                               - k * std::exp(-r_d * t_rem), 0.0);
     }
 
@@ -86,14 +86,14 @@ double american_option_lv(double s_0,
       const double alpha_np = 0.5 * sig_np1 * sig_np1 * S_i * S_i;
 
       // Implicit part (t_n)
-      a[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) - (r_d - q) * S_i / (2.0 * ds));
+      a[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) - (r_d - r_f) * S_i / (2.0 * ds));
       b[i - 1] =  1.0      + 0.5 * dt * (2.0 * alpha_n / (ds * ds) + r_d);
-      c[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) + (r_d - q) * S_i / (2.0 * ds));
+      c[i - 1] = -0.5 * dt * (alpha_n / (ds * ds) + (r_d - r_f) * S_i / (2.0 * ds));
 
       // RHS (t_{n+1})
-      d[i - 1] =  0.5 * dt * (alpha_np / (ds * ds) - (r_d - q) * S_i / (2.0 * ds)) * old_prices[i - 1]
+      d[i - 1] =  0.5 * dt * (alpha_np / (ds * ds) - (r_d - r_f) * S_i / (2.0 * ds)) * old_prices[i - 1]
         + (1.0 - 0.5 * dt * (2.0 * alpha_np / (ds * ds) + r_d))                     * old_prices[i]
-        + 0.5 * dt * (alpha_np / (ds * ds) + (r_d - q) * S_i / (2.0 * ds))          * old_prices[i + 1];
+        + 0.5 * dt * (alpha_np / (ds * ds) + (r_d - r_f) * S_i / (2.0 * ds))          * old_prices[i + 1];
     }
 
     // Boundary contributions to RHS and zero touching off-diagonals
@@ -174,7 +174,7 @@ double american_option_lv(double s_0,
 //' @param k Strike price.
 //' @param tau Time to expiry (in years).
 //' @param r_d Risk-free rate (domestic).
-//' @param q Dividend yield.
+//' @param r_f Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).
 //' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
 //'   sampled on the spatial grid (rows) and time grid including both endpoints (columns).
 //' @param type Either \code{"call"} or \code{"put"}.
@@ -182,7 +182,7 @@ double american_option_lv(double s_0,
 //' @param n_s Number of intervals in the asset grid (\code{n_s + 1} nodes).
 //' @param n_t Number of time steps.
 //' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
-//' @param tolerance Convergence tolerance for the penalty iterations.
+//' @param tolerance Convergence tolerance for penalty iterations.
 //'
 //' @return Option price as a numeric scalar.
 //'
@@ -198,7 +198,7 @@ double american_option_lv(double s_0,
                           double k,
                           double tau,
                           double r_d,
-                          double q,
+                          double r_f,
                           NumericMatrix sigma,
                           String type,
                           double s_min,
@@ -208,7 +208,7 @@ double american_option_lv(double s_0,
                           double lambda,
                           double tolerance) {
 
-  return LocalVolatility::american_option_lv(s_0, k, tau, r_d, q, sigma, type,
+  return LocalVolatility::american_option_lv(s_0, k, tau, r_d, r_f, sigma, type,
                                              s_min, s_max, n_s, n_t,
                                              lambda, tolerance);
 }

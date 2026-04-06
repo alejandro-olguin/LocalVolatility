@@ -45,7 +45,7 @@ inline double interp_raw(double s0, double s_min, double ds,
 //' @param strikes Numeric vector of strike prices.
 //' @param taus Numeric vector of times to expiry (years).
 //' @param r_ds Numeric vector of domestic risk-free rates.
-//' @param r_fs Numeric vector of foreign/dividend rates.
+//' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
 //' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
 //' @param types Character vector, each element \code{"call"} or \code{"put"}.
 //' @param s_min,s_max Domain bounds for the asset grid.
@@ -299,7 +299,7 @@ Rcpp::NumericVector batch_price_european_lv(
 //' @param strikes Numeric vector of strike prices.
 //' @param taus Numeric vector of times to expiry (years).
 //' @param r_ds Numeric vector of domestic risk-free rates.
-//' @param qs Numeric vector of dividend yields.
+//' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
 //' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
 //' @param types Character vector, each element \code{"call"} or \code{"put"}.
 //' @param s_min,s_max Domain bounds for the asset grid.
@@ -323,7 +323,7 @@ Rcpp::NumericVector batch_price_american_lv(
     const Rcpp::NumericVector& strikes,
     const Rcpp::NumericVector& taus,
     const Rcpp::NumericVector& r_ds,
-    const Rcpp::NumericVector& qs,
+    const Rcpp::NumericVector& r_fs,
     const Rcpp::NumericMatrix& sigma,
     const Rcpp::StringVector& types,
     double s_min, double s_max,
@@ -334,7 +334,7 @@ Rcpp::NumericVector batch_price_american_lv(
 
   // --- Validation ---
   if (spots.size() != n_opt || taus.size() != n_opt || r_ds.size() != n_opt ||
-      qs.size() != n_opt || types.size() != n_opt)
+      r_fs.size() != n_opt || types.size() != n_opt)
     Rcpp::stop("All input vectors must have the same length.");
   if (n_s < 2 || n_t < 1) Rcpp::stop("n_s >= 2 and n_t >= 1 required.");
   if (s_max <= s_min) Rcpp::stop("s_max must be > s_min.");
@@ -371,13 +371,13 @@ Rcpp::NumericVector batch_price_american_lv(
 
   // Copy scalar parameters for thread safety
   std::vector<double> spots_v(n_opt), strikes_v(n_opt), taus_v(n_opt),
-                      rds_v(n_opt), qs_v(n_opt);
+                      rds_v(n_opt), rfs_v(n_opt);
   for (int j = 0; j < n_opt; ++j) {
     spots_v[j]   = spots[j];
     strikes_v[j] = strikes[j];
     taus_v[j]    = taus[j];
     rds_v[j]     = r_ds[j];
-    qs_v[j]      = qs[j];
+    rfs_v[j]     = r_fs[j];
   }
 
   std::vector<double> results(n_opt, 0.0);
@@ -396,7 +396,7 @@ Rcpp::NumericVector batch_price_american_lv(
       double k     = strikes_v[j];
       double tau_j = taus_v[j];
       double rd    = rds_v[j];
-      double q     = qs_v[j];
+      double q     = rfs_v[j];
       double spot  = spots_v[j];
       bool   call  = is_call[j];
 

@@ -1,5 +1,34 @@
 # LocalVolatility NEWS
 
+## 3.0.0 (2026-04-05)
+
+### BREAKING CHANGES — Parameter and file renames
+
+This release homogenises naming across all exported functions. **Users must
+update their code** as follows:
+
+| Function | Old parameter | New parameter |
+|----------|--------------|---------------|
+| `european_option_lv` | `q` | `r_f` |
+| `american_option_lv` | `q` | `r_f` |
+| `batch_price_american_lv` | `qs` | `r_fs` |
+| `european_option_cf_2d` | `n` (ADR ratio) | `adr_ratio` |
+| `european_option_cf_2d` | order: `..., rho, n, type` | order: `..., rho, type, adr_ratio` |
+| `tavella_randall` | `x0` | `x_0` |
+| `tavella_randall` | `n` | `n_grid` |
+
+**Migration guide:**
+- In 1D calls, replace `q = ...` with `r_f = ...` (same PDE slot: cost-of-carry).
+- In `batch_price_american_lv`, replace `qs = ...` with `r_fs = ...`.
+- In `european_option_cf_2d`, move `type` before `adr_ratio` and rename `n` to `adr_ratio`.
+- In `tavella_randall`, rename `x0` to `x_0` and `n` to `n_grid`.
+
+### Naming improvements
+- Source files renamed from `1D_*` / `2D_*` prefixes to consistent
+  `{exercise}_{variant}_{dim}.cpp` pattern (e.g. `european_lv_1d.cpp`).
+- Standardised `@param tolerance` description across all American solvers.
+- Standardised `@param r_f` / `@param r_fs` descriptions across 1D and batch solvers.
+
 ## 2.2.0 (2026-04-01)
 
 ### New features

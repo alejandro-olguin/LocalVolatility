@@ -97,14 +97,14 @@ test_that("Batch American matches single solver (puts)", {
 
   k <- c(90, 100, 110)
   tau <- rep(1.0, 3)
-  r_d <- rep(0.05, 3); q <- rep(0.02, 3)
+  r_d <- rep(0.05, 3); r_f <- rep(0.02, 3)
 
   single <- vapply(seq_along(k), function(i) {
-    american_option_lv(s_0, k[i], tau[i], r_d[i], q[i], Sigma, "put",
+    american_option_lv(s_0, k[i], tau[i], r_d[i], r_f[i], Sigma, "put",
                        s_min, s_max, n_s, n_t, lambda, tol)
   }, numeric(1))
 
-  batch <- batch_price_american_lv(rep(s_0, 3), k, tau, r_d, q, Sigma,
+  batch <- batch_price_american_lv(rep(s_0, 3), k, tau, r_d, r_f, Sigma,
                                     rep("put", 3), s_min, s_max, n_s, n_t,
                                     lambda, tol)
 
@@ -121,14 +121,14 @@ test_that("Batch American matches single solver (calls)", {
 
   k <- c(90, 100, 110)
   tau <- rep(1.0, 3)
-  r_d <- rep(0.05, 3); q <- rep(0.02, 3)
+  r_d <- rep(0.05, 3); r_f <- rep(0.02, 3)
 
   single <- vapply(seq_along(k), function(i) {
-    american_option_lv(s_0, k[i], tau[i], r_d[i], q[i], Sigma, "call",
+    american_option_lv(s_0, k[i], tau[i], r_d[i], r_f[i], Sigma, "call",
                        s_min, s_max, n_s, n_t, lambda, tol)
   }, numeric(1))
 
-  batch <- batch_price_american_lv(rep(s_0, 3), k, tau, r_d, q, Sigma,
+  batch <- batch_price_american_lv(rep(s_0, 3), k, tau, r_d, r_f, Sigma,
                                     rep("call", 3), s_min, s_max, n_s, n_t,
                                     lambda, tol)
 
@@ -144,15 +144,15 @@ test_that("Batch American handles mixed types", {
 
   k <- c(100, 100)
   tau <- c(1.0, 1.0)
-  r_d <- rep(0.05, 2); q <- rep(0.02, 2)
+  r_d <- rep(0.05, 2); r_f <- rep(0.02, 2)
   types <- c("call", "put")
 
   single <- vapply(seq_along(k), function(i) {
-    american_option_lv(s_0, k[i], tau[i], r_d[i], q[i], Sigma, types[i],
+    american_option_lv(s_0, k[i], tau[i], r_d[i], r_f[i], Sigma, types[i],
                        s_min, s_max, n_s, n_t, lambda, tol)
   }, numeric(1))
 
-  batch <- batch_price_american_lv(rep(s_0, 2), k, tau, r_d, q, Sigma, types,
+  batch <- batch_price_american_lv(rep(s_0, 2), k, tau, r_d, r_f, Sigma, types,
                                     s_min, s_max, n_s, n_t, lambda, tol)
 
   for (i in seq_along(k)) {
@@ -168,9 +168,9 @@ test_that("Batch American prices are positive and finite", {
   k <- seq(80, 120, by = 5)
   n_opt <- length(k)
   tau <- rep(0.5, n_opt)
-  r_d <- rep(0.05, n_opt); q <- rep(0.02, n_opt)
+  r_d <- rep(0.05, n_opt); r_f <- rep(0.02, n_opt)
 
-  batch <- batch_price_american_lv(rep(s_0, n_opt), k, tau, r_d, q, Sigma,
+  batch <- batch_price_american_lv(rep(s_0, n_opt), k, tau, r_d, r_f, Sigma,
                                     rep("put", n_opt), s_min, s_max, n_s, n_t,
                                     lambda, tol)
 

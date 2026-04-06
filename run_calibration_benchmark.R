@@ -88,7 +88,7 @@ loss_serial_american <- function(sigma_knots, data, knot_points_xy, knots_xy, gr
   SCALE <- 1e6
   loss <- 0
   for (i in seq_len(nrow(data))) {
-    model <- american_option_lv(data$spot[i], data$k[i], data$tau[i], data$r_d[i], data$q[i],
+    model <- american_option_lv(data$spot[i], data$k[i], data$tau[i], data$r_d[i], data$r_f[i],
                                  sigma, data$type[i], u_min, u_max, n_u, n_t, lambda, tolerance)
     loss <- loss + SCALE * data$w[i] * (model - data$price[i])^2
   }
@@ -100,7 +100,7 @@ loss_batch_american <- function(sigma_knots, data, knot_points_xy, knots_xy, gri
                                  u_min, u_max, n_u, n_t, lambda, tolerance, tikhonov_weight) {
   sigma <- get_sigma_interpolated(sigma_knots, knot_points_xy, knots_xy, grid_xy)
   SCALE <- 1e6
-  models <- batch_price_american_lv(data$spot, data$k, data$tau, data$r_d, data$q,
+  models <- batch_price_american_lv(data$spot, data$k, data$tau, data$r_d, data$r_f,
                                      sigma, data$type, u_min, u_max, n_u, n_t, lambda, tolerance)
   diffs <- models - data$price
   loss <- sum(SCALE * data$w * diffs^2)
@@ -167,7 +167,7 @@ cat("Convergence:", stock_knots_batch$convergence, "| Final loss:", stock_knots_
 sigma_fitted_s <- get_sigma_interpolated(stock_knots_batch$par, knot_points_xy_s, knots_xy_s, grid_xy_s)
 
 stock_model_prices <- batch_price_american_lv(
-  data_s$spot, data_s$k, data_s$tau, data_s$r_d, data_s$q,
+  data_s$spot, data_s$k, data_s$tau, data_s$r_d, data_s$r_f,
   sigma_fitted_s, data_s$type, s_min, s_max, n_s, n_t, lambda, tolerance
 )
 

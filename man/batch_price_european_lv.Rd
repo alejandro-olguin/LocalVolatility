@@ -27,7 +27,7 @@ batch_price_european_lv(
 
 \item{r_ds}{Numeric vector of domestic risk-free rates.}
 
-\item{r_fs}{Numeric vector of foreign/dividend rates.}
+\item{r_fs}{Numeric vector of foreign risk-free rates or cost-of-carry rates.}
 
 \item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.}
 

@@ -9,7 +9,7 @@ american_option_lv(
   k,
   tau,
   r_d,
-  q,
+  r_f,
   sigma,
   type,
   s_min,
@@ -29,7 +29,7 @@ american_option_lv(
 
 \item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield.}
+\item{r_f}{Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).}
 
 \item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
 sampled on the spatial grid (rows) and time grid including both endpoints (columns).}
@@ -44,7 +44,7 @@ sampled on the spatial grid (rows) and time grid including both endpoints (colum
 
 \item{lambda}{Penalty parameter (> 0, typically 1e4 to 1e6).}
 
-\item{tolerance}{Convergence tolerance for the penalty iterations.}
+\item{tolerance}{Convergence tolerance for penalty iterations.}
 }
 \value{
 Option price as a numeric scalar.

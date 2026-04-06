@@ -101,7 +101,7 @@ test_that("2D European PDE matches closed-form with high r_f", {
     s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha
   )
   cf <- european_option_cf_2d(s_0, x_0, k, tau, r_d, r_f, q,
-                               sigma_s, sigma_x, rho, 1, "call")
+                               sigma_s, sigma_x, rho, "call", 1)
 
   expect_true(is.finite(pde) && is.finite(cf))
   # PDE should be reasonably close to closed-form (within 1% of price)

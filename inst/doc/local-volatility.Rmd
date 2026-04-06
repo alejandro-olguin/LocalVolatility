@@ -1,0 +1,36 @@
+---
+title: "LocalVolatility: PDE Pricing in 1D and 2D"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LocalVolatility: PDE Pricing in 1D and 2D}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Overview
+
+This vignette summarizes the PDEs, boundary conditions, and usage examples for the package.
+
+## PDEs
+
+We solve the backward Kolmogorov PDEs under the domestic measure. For 2D European options:
+
+$$
+V_t + \tfrac{1}{2}(\sigma_S S)^2 V_{SS} + \tfrac{1}{2}(\sigma_X X)^2 V_{XX} + \rho\,\sigma_S\,\sigma_X\,S X\, V_{SX}
++ (r_f - q - \rho\,\sigma_S\,\sigma_X) S V_S + (r_d - r_f) X V_X - r_d V = 0.
+$$
+
+## Examples
+
+```{r eval=FALSE}
+library(LocalVolatility)
+# Quick constant-vol European 2D price
+price <- european_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+                            0.2, 0.15, 0.3, "call",
+                            10, 300, 1, 60, 40, 40, 50, 3)
+price
+```

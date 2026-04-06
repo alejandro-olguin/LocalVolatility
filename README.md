@@ -31,13 +31,13 @@ macOS users need a working C++ toolchain for Rcpp (e.g., Xcode + Command Line To
 library(LocalVolatility)
 
 s_0 <- 100; k <- 100; tau <- 1
-r_d <- 0.05; q <- 0.02
+r_d <- 0.05; r_f <- 0.02
 n_s <- 200; n_t <- 200
 s_min <- 1; s_max <- 400
 
 # Sigma matrix: (n_s + 1) x (n_t + 1)
 Sigma <- matrix(0.2, nrow = n_s + 1, ncol = n_t + 1)
-price_eur_1d <- european_option_lv(s_0, k, tau, r_d, q, Sigma, "call",
+price_eur_1d <- european_option_lv(s_0, k, tau, r_d, r_f, Sigma, "call",
                                    s_min, s_max, n_s, n_t)
 price_eur_1d
 ```
@@ -46,7 +46,7 @@ price_eur_1d
 
 ```r
 lambda <- 1e4; tol <- 1e-8
-price_am_1d <- american_option_lv(s_0, k, tau, r_d, q, Sigma, "put",
+price_am_1d <- american_option_lv(s_0, k, tau, r_d, r_f, Sigma, "put",
                                   s_min, s_max, n_s, n_t, lambda, tol)
 price_am_1d
 ```
@@ -114,8 +114,7 @@ prices <- batch_price_european_lv(spots, strikes, taus, r_ds, r_fs,
                                    Sigma, types, s_min, s_max, n_s, n_t)
 
 # Price multiple American options in one call (parallel)
-qs <- rep(0.02, 5)
-prices_am <- batch_price_american_lv(spots, strikes, taus, r_ds, qs,
+prices_am <- batch_price_american_lv(spots, strikes, taus, r_ds, r_fs,
                                       Sigma, types, s_min, s_max, n_s, n_t,
                                       lambda = 1e4, tolerance = 1e-8)
 ```
@@ -124,7 +123,7 @@ prices_am <- batch_price_american_lv(spots, strikes, taus, r_ds, qs,
 
 ```r
 price_cf <- european_option_cf_2d(s_0, x_0, k, tau, r_d, r_f, q,
-                                   sigma_s, sigma_x, rho, 1, "call")
+                                   sigma_s, sigma_x, rho, "call", 1)
 price_cf
 ```
 
@@ -136,15 +135,15 @@ Let \(\tau = T - t\) denote time-to-maturity; prices are computed backward in ti
 
 Let \(v = v(S,t)\). Under the domestic money-market measure:
 
-\[ v_t + \tfrac{1}{2}\,\sigma(S,t)^2\,S^2\,v_{SS} + (r_d - q) S v_S - r_d v = 0, \quad v(S,T) = \max(\pm(S-K),0). \]
+\[ v_t + \tfrac{1}{2}\,\sigma(S,t)^2\,S^2\,v_{SS} + (r_d - r_f) S v_S - r_d v = 0, \quad v(S,T) = \max(\pm(S-K),0). \]
 
-Boundary asymptotes for calls: \(S\to 0: v\to 0\); \(S\to \infty: v\to S e^{-q\tau} - K e^{-r_d\tau}\)_+.
+Boundary asymptotes for calls: \(S\to 0: v\to 0\); \(S\to \infty: v\to S e^{-r_f\tau} - K e^{-r_d\tau}\)_+.
 
 ### 1D American (local volatility)
 
 Linear complementarity problem (LCP): with payoff \(\phi\),
 
-\[ \min\{ -\mathcal{L} v,\ v - \phi \} = 0,\quad \mathcal{L}v := v_t + \tfrac{1}{2}\sigma^2 S^2 v_{SS} + (r_d-q) S v_S - r_d v. \]
+\[ \min\{ -\mathcal{L} v,\ v - \phi \} = 0,\quad \mathcal{L}v := v_t + \tfrac{1}{2}\sigma^2 S^2 v_{SS} + (r_d-r_f) S v_S - r_d v. \]
 
 We solve via a penalty-projection scheme with iteration cap and convergence monitoring.
 
@@ -166,7 +165,7 @@ sub-steps for stability.
 
 ## Numerics
 
-- **Grids:** Tavella-Randall nonuniform grids with parameter `alpha` (returns `n+1` nodes for consistency with the PDE code).
+- **Grids:** Tavella-Randall nonuniform grids with parameter `alpha` (returns `n_grid+1` nodes for consistency with the PDE code).
 - **Splitting:** Yanenko (ADI-like), implicit in S then implicit in X.
 - **Linear solves:** Thomas algorithm for tridiagonal systems.
 - **American:** Penalty method with `lambda` (typically 1e4-1e6) and relative tolerance, capped at 200 iterations per time step with a warning on non-convergence.

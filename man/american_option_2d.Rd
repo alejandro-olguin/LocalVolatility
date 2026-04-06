@@ -65,7 +65,7 @@ american_option_2d(
 
 \item{lambda}{Penalty parameter (> 0, typically 1e4 to 1e6).}
 
-\item{tolerance}{Relative error tolerance for the penalty fixed-point iterations.}
+\item{tolerance}{Convergence tolerance for penalty iterations.}
 }
 \value{
 Option price as a numeric scalar.

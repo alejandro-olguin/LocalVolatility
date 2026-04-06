@@ -1,8 +1,8 @@
 Package: LocalVolatility
 Type: Package
 Title: Pricing Engines for Local Volatility Models
-Version: 2.2.0
-Date: 2026-04-01
+Version: 3.0.0
+Date: 2026-04-05
 Encoding: UTF-8
 Authors@R: 
 	person("Alejandro", "Olguin", email = "alejandro_olguin@icloud.com", role = c("aut", "cre"))

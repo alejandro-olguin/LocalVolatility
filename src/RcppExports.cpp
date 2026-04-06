@@ -13,33 +13,41 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// american_option_lv
-double american_option_lv(double s_0, double k, double tau, double r_d, double q, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance);
-static SEXP _LocalVolatility_american_option_lv_try(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP qSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+// american_option_2d
+double american_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha, double lambda, double tolerance);
+static SEXP _LocalVolatility_american_option_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
+    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
     Rcpp::traits::input_parameter< double >::type k(kSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
+    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
     Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_s(sigma_sSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma_x(sigma_xSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
     Rcpp::traits::input_parameter< String >::type type(typeSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
+    Rcpp::traits::input_parameter< double >::type x_min(x_minSEXP);
+    Rcpp::traits::input_parameter< double >::type x_max(x_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
+    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(american_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t, lambda, tolerance));
+    rcpp_result_gen = Rcpp::wrap(american_option_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_american_option_lv(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP qSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+RcppExport SEXP _LocalVolatility_american_option_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_american_option_lv_try(s_0SEXP, kSEXP, tauSEXP, r_dSEXP, qSEXP, sigmaSEXP, typeSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_american_option_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, typeSEXP, s_minSEXP, s_maxSEXP, x_minSEXP, x_maxSEXP, n_sSEXP, n_xSEXP, n_tSEXP, alphaSEXP, lambdaSEXP, toleranceSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -59,31 +67,33 @@ RcppExport SEXP _LocalVolatility_american_option_lv(SEXP s_0SEXP, SEXP kSEXP, SE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// european_option_lv
-double european_option_lv(double s_0, double k, double tau, double r_d, double q, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t);
-static SEXP _LocalVolatility_european_option_lv_try(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP qSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
+// american_option_lv
+double american_option_lv(double s_0, double k, double tau, double r_d, double r_f, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance);
+static SEXP _LocalVolatility_american_option_lv_try(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
     Rcpp::traits::input_parameter< double >::type k(kSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
     Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< String >::type type(typeSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
-    rcpp_result_gen = Rcpp::wrap(european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t));
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(american_option_lv(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t, lambda, tolerance));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_european_option_lv(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP qSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
+RcppExport SEXP _LocalVolatility_american_option_lv(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_lv_try(s_0SEXP, kSEXP, tauSEXP, r_dSEXP, qSEXP, sigmaSEXP, typeSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_american_option_lv_try(s_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, sigmaSEXP, typeSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -157,41 +167,31 @@ RcppExport SEXP _LocalVolatility_american_option_lv_2d(SEXP s_0SEXP, SEXP x_0SEX
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// american_option_2d
-double american_option_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha, double lambda, double tolerance);
-static SEXP _LocalVolatility_american_option_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+// batch_price_european_lv
+Rcpp::NumericVector batch_price_european_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t);
+static SEXP _LocalVolatility_batch_price_european_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
-    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
-    Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
-    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma_s(sigma_sSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma_x(sigma_xSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< String >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type spots(spotsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type strikes(strikesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type taus(tausSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_ds(r_dsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_fs(r_fsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type types(typesSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
-    Rcpp::traits::input_parameter< double >::type x_min(x_minSEXP);
-    Rcpp::traits::input_parameter< double >::type x_max(x_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
-    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(american_option_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance));
+    rcpp_result_gen = Rcpp::wrap(batch_price_european_lv(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_american_option_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+RcppExport SEXP _LocalVolatility_batch_price_european_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_american_option_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, typeSEXP, s_minSEXP, s_maxSEXP, x_minSEXP, x_maxSEXP, n_sSEXP, n_xSEXP, n_tSEXP, alphaSEXP, lambdaSEXP, toleranceSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_european_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, r_fsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -211,39 +211,33 @@ RcppExport SEXP _LocalVolatility_american_option_2d(SEXP s_0SEXP, SEXP x_0SEXP, 
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// european_option_lv_2d
-double european_option_lv_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, NumericMatrix sigma_s, NumericMatrix sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha);
-static SEXP _LocalVolatility_european_option_lv_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP) {
+// batch_price_american_lv
+Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance);
+static SEXP _LocalVolatility_batch_price_american_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
-    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
-    Rcpp::traits::input_parameter< double >::type k(kSEXP);
-    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
-    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type sigma_s(sigma_sSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type sigma_x(sigma_xSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< String >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type spots(spotsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type strikes(strikesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type taus(tausSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_ds(r_dsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_fs(r_fsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type types(typesSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
-    Rcpp::traits::input_parameter< double >::type x_min(x_minSEXP);
-    Rcpp::traits::input_parameter< double >::type x_max(x_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
-    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(european_option_lv_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha));
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(batch_price_american_lv(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_european_option_lv_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP) {
+RcppExport SEXP _LocalVolatility_batch_price_american_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_lv_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, typeSEXP, s_minSEXP, s_maxSEXP, x_minSEXP, x_maxSEXP, n_sSEXP, n_xSEXP, n_tSEXP, alphaSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_american_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, r_fsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -316,8 +310,8 @@ RcppExport SEXP _LocalVolatility_european_option_2d(SEXP s_0SEXP, SEXP x_0SEXP, 
     return rcpp_result_gen;
 }
 // european_option_cf_2d
-double european_option_cf_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, int n, String type);
-static SEXP _LocalVolatility_european_option_cf_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP nSEXP, SEXP typeSEXP) {
+double european_option_cf_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double sigma_s, double sigma_x, double rho, String type, int adr_ratio);
+static SEXP _LocalVolatility_european_option_cf_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP adr_ratioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
@@ -330,17 +324,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type sigma_s(sigma_sSEXP);
     Rcpp::traits::input_parameter< double >::type sigma_x(sigma_xSEXP);
     Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< String >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(european_option_cf_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, n, type));
+    Rcpp::traits::input_parameter< int >::type adr_ratio(adr_ratioSEXP);
+    rcpp_result_gen = Rcpp::wrap(european_option_cf_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, adr_ratio));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_european_option_cf_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP nSEXP, SEXP typeSEXP) {
+RcppExport SEXP _LocalVolatility_european_option_cf_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP adr_ratioSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_cf_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, nSEXP, typeSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_cf_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, typeSEXP, adr_ratioSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -360,31 +354,31 @@ RcppExport SEXP _LocalVolatility_european_option_cf_2d(SEXP s_0SEXP, SEXP x_0SEX
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// batch_price_european_lv
-Rcpp::NumericVector batch_price_european_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t);
-static SEXP _LocalVolatility_batch_price_european_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
+// european_option_lv
+double european_option_lv(double s_0, double k, double tau, double r_d, double r_f, NumericMatrix sigma, String type, double s_min, double s_max, int n_s, int n_t);
+static SEXP _LocalVolatility_european_option_lv_try(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type spots(spotsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type strikes(strikesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type taus(tausSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_ds(r_dsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_fs(r_fsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type types(typesSEXP);
+    Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
+    Rcpp::traits::input_parameter< double >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
+    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< String >::type type(typeSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
-    rcpp_result_gen = Rcpp::wrap(batch_price_european_lv(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t));
+    rcpp_result_gen = Rcpp::wrap(european_option_lv(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_batch_price_european_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
+RcppExport SEXP _LocalVolatility_european_option_lv(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP sigmaSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_european_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, r_fsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_lv_try(s_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, sigmaSEXP, typeSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -404,33 +398,39 @@ RcppExport SEXP _LocalVolatility_batch_price_european_lv(SEXP spotsSEXP, SEXP st
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// batch_price_american_lv
-Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& qs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance);
-static SEXP _LocalVolatility_batch_price_american_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP qsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+// european_option_lv_2d
+double european_option_lv_2d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, NumericMatrix sigma_s, NumericMatrix sigma_x, double rho, String type, double s_min, double s_max, double x_min, double x_max, int n_s, int n_x, int n_t, double alpha);
+static SEXP _LocalVolatility_european_option_lv_2d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type spots(spotsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type strikes(strikesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type taus(tausSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type r_ds(r_dsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type qs(qsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type types(typesSEXP);
+    Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
+    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
+    Rcpp::traits::input_parameter< double >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< double >::type r_d(r_dSEXP);
+    Rcpp::traits::input_parameter< double >::type r_f(r_fSEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sigma_s(sigma_sSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sigma_x(sigma_xSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< String >::type type(typeSEXP);
     Rcpp::traits::input_parameter< double >::type s_min(s_minSEXP);
     Rcpp::traits::input_parameter< double >::type s_max(s_maxSEXP);
+    Rcpp::traits::input_parameter< double >::type x_min(x_minSEXP);
+    Rcpp::traits::input_parameter< double >::type x_max(x_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n_s(n_sSEXP);
+    Rcpp::traits::input_parameter< int >::type n_x(n_xSEXP);
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(batch_price_american_lv(spots, strikes, taus, r_ds, qs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance));
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(european_option_lv_2d(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_batch_price_american_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP qsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+RcppExport SEXP _LocalVolatility_european_option_lv_2d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP sigma_sSEXP, SEXP sigma_xSEXP, SEXP rhoSEXP, SEXP typeSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_sSEXP, SEXP n_xSEXP, SEXP n_tSEXP, SEXP alphaSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_american_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, qsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_european_option_lv_2d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, sigma_sSEXP, sigma_xSEXP, rhoSEXP, typeSEXP, s_minSEXP, s_maxSEXP, x_minSEXP, x_maxSEXP, n_sSEXP, n_xSEXP, n_tSEXP, alphaSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -451,24 +451,24 @@ RcppExport SEXP _LocalVolatility_batch_price_american_lv(SEXP spotsSEXP, SEXP st
     return rcpp_result_gen;
 }
 // tavella_randall
-NumericVector tavella_randall(double x0, double alpha, double x_min, double x_max, int n);
-static SEXP _LocalVolatility_tavella_randall_try(SEXP x0SEXP, SEXP alphaSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP nSEXP) {
+NumericVector tavella_randall(double x_0, double alpha, double x_min, double x_max, int n_grid);
+static SEXP _LocalVolatility_tavella_randall_try(SEXP x_0SEXP, SEXP alphaSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_gridSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< double >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< double >::type x_0(x_0SEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type x_min(x_minSEXP);
     Rcpp::traits::input_parameter< double >::type x_max(x_maxSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(tavella_randall(x0, alpha, x_min, x_max, n));
+    Rcpp::traits::input_parameter< int >::type n_grid(n_gridSEXP);
+    rcpp_result_gen = Rcpp::wrap(tavella_randall(x_0, alpha, x_min, x_max, n_grid));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_tavella_randall(SEXP x0SEXP, SEXP alphaSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP nSEXP) {
+RcppExport SEXP _LocalVolatility_tavella_randall(SEXP x_0SEXP, SEXP alphaSEXP, SEXP x_minSEXP, SEXP x_maxSEXP, SEXP n_gridSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_tavella_randall_try(x0SEXP, alphaSEXP, x_minSEXP, x_maxSEXP, nSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_tavella_randall_try(x_0SEXP, alphaSEXP, x_minSEXP, x_maxSEXP, n_gridSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -493,15 +493,15 @@ RcppExport SEXP _LocalVolatility_tavella_randall(SEXP x0SEXP, SEXP alphaSEXP, SE
 static int _LocalVolatility_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
-        signatures.insert("double(*american_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int,double,double)");
-        signatures.insert("double(*european_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int)");
-        signatures.insert("double(*american_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double,double,double)");
         signatures.insert("double(*american_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double,double,double)");
-        signatures.insert("double(*european_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double)");
-        signatures.insert("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
-        signatures.insert("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,int,String)");
+        signatures.insert("double(*american_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int,double,double)");
+        signatures.insert("double(*american_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double,double,double)");
         signatures.insert("Rcpp::NumericVector(*batch_price_european_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int)");
         signatures.insert("Rcpp::NumericVector(*batch_price_american_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int,double,double)");
+        signatures.insert("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
+        signatures.insert("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,String,int)");
+        signatures.insert("double(*european_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int)");
+        signatures.insert("double(*european_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double)");
         signatures.insert("NumericVector(*tavella_randall)(double,double,double,double,int)");
     }
     return signatures.find(sig) != signatures.end();
@@ -509,30 +509,30 @@ static int _LocalVolatility_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _LocalVolatility_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_lv", (DL_FUNC)_LocalVolatility_american_option_lv_try);
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_lv", (DL_FUNC)_LocalVolatility_european_option_lv_try);
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_lv_2d", (DL_FUNC)_LocalVolatility_american_option_lv_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_2d", (DL_FUNC)_LocalVolatility_american_option_2d_try);
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_lv_2d", (DL_FUNC)_LocalVolatility_european_option_lv_2d_try);
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_2d", (DL_FUNC)_LocalVolatility_european_option_2d_try);
-    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_cf_2d", (DL_FUNC)_LocalVolatility_european_option_cf_2d_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_lv", (DL_FUNC)_LocalVolatility_american_option_lv_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_american_option_lv_2d", (DL_FUNC)_LocalVolatility_american_option_lv_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_batch_price_european_lv", (DL_FUNC)_LocalVolatility_batch_price_european_lv_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_batch_price_american_lv", (DL_FUNC)_LocalVolatility_batch_price_american_lv_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_2d", (DL_FUNC)_LocalVolatility_european_option_2d_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_cf_2d", (DL_FUNC)_LocalVolatility_european_option_cf_2d_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_lv", (DL_FUNC)_LocalVolatility_european_option_lv_try);
+    R_RegisterCCallable("LocalVolatility", "_LocalVolatility_european_option_lv_2d", (DL_FUNC)_LocalVolatility_european_option_lv_2d_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_tavella_randall", (DL_FUNC)_LocalVolatility_tavella_randall_try);
     R_RegisterCCallable("LocalVolatility", "_LocalVolatility_RcppExport_validate", (DL_FUNC)_LocalVolatility_RcppExport_validate);
     return R_NilValue;
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_LocalVolatility_american_option_lv", (DL_FUNC) &_LocalVolatility_american_option_lv, 13},
-    {"_LocalVolatility_european_option_lv", (DL_FUNC) &_LocalVolatility_european_option_lv, 11},
-    {"_LocalVolatility_american_option_lv_2d", (DL_FUNC) &_LocalVolatility_american_option_lv_2d, 21},
     {"_LocalVolatility_american_option_2d", (DL_FUNC) &_LocalVolatility_american_option_2d, 21},
-    {"_LocalVolatility_european_option_lv_2d", (DL_FUNC) &_LocalVolatility_european_option_lv_2d, 19},
-    {"_LocalVolatility_european_option_2d", (DL_FUNC) &_LocalVolatility_european_option_2d, 19},
-    {"_LocalVolatility_european_option_cf_2d", (DL_FUNC) &_LocalVolatility_european_option_cf_2d, 12},
+    {"_LocalVolatility_american_option_lv", (DL_FUNC) &_LocalVolatility_american_option_lv, 13},
+    {"_LocalVolatility_american_option_lv_2d", (DL_FUNC) &_LocalVolatility_american_option_lv_2d, 21},
     {"_LocalVolatility_batch_price_european_lv", (DL_FUNC) &_LocalVolatility_batch_price_european_lv, 11},
     {"_LocalVolatility_batch_price_american_lv", (DL_FUNC) &_LocalVolatility_batch_price_american_lv, 13},
+    {"_LocalVolatility_european_option_2d", (DL_FUNC) &_LocalVolatility_european_option_2d, 19},
+    {"_LocalVolatility_european_option_cf_2d", (DL_FUNC) &_LocalVolatility_european_option_cf_2d, 12},
+    {"_LocalVolatility_european_option_lv", (DL_FUNC) &_LocalVolatility_european_option_lv, 11},
+    {"_LocalVolatility_european_option_lv_2d", (DL_FUNC) &_LocalVolatility_european_option_lv_2d, 19},
     {"_LocalVolatility_tavella_randall", (DL_FUNC) &_LocalVolatility_tavella_randall, 5},
     {"_LocalVolatility_RcppExport_registerCCallable", (DL_FUNC) &_LocalVolatility_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
