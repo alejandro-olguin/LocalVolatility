@@ -1,5 +1,39 @@
 # LocalVolatility NEWS
 
+## 3.1.0 (2026-04-06)
+
+### New features
+
+- **Heston stochastic volatility solvers**: Three new exported functions for
+  pricing European and American options under the Heston (1993) model:
+  - `heston_cf()`: Closed-form European price via the Heston characteristic
+    function with Simpson's rule numerical integration. Uses the numerically
+    stable "little Heston trap" formulation (Albrecher et al. 2007).
+  - `european_option_heston()`: 2D finite-difference PDE solver on (S, v)
+    using Yanenko operator splitting with Tavella-Randall grids.
+  - `american_option_heston()`: Same PDE solver with penalty-projection
+    for early exercise.
+- **4D Monte Carlo (double-Heston quanto)**: Two new exported functions for
+  pricing options on a foreign equity with stochastic volatility on both
+  equity and FX:
+  - `mc_european_heston_4d()`: European MC with `std::thread` parallelism,
+    antithetic variates, Euler-Maruyama with full truncation, and Cholesky
+    decomposition for correlated 4D Brownian motion.
+  - `mc_american_heston_4d()`: American MC via Longstaff-Schwartz
+    least-squares regression with parallel forward simulation.
+- All Heston/MC functions validate inputs and warn when the Feller condition
+  (2κθ > ξ²) is violated.
+
+### Testing
+
+- Added `test_heston.R` with 26 tests: CF put-call parity, positivity,
+  deep ITM/OTM, input validation, Feller warning, PDE vs CF convergence
+  (call/put), PDE put-call parity, American ≥ European.
+- Added `test_mc_heston_4d.R` with 18 tests: positivity, reproducibility,
+  put-call parity (within MC error), MC vs 2D PDE convergence (xi→0),
+  SE scaling with n_paths, American ≥ European, input validation.
+- Total test count: 115 tests across 8 files.
+
 ## 3.0.0 (2026-04-05)
 
 ### BREAKING CHANGES — Parameter and file renames

@@ -40,6 +40,55 @@ american_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, 
     .Call(`_LocalVolatility_american_option_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance)
 }
 
+#' American Option (Heston stochastic volatility, penalty method)
+#'
+#' Prices an American option under the Heston stochastic volatility model
+#' using a 2D finite-difference PDE with Yanenko operator splitting and a
+#' penalty-projection scheme for the early exercise constraint.
+#'
+#' @param s_0 Stock spot price (> 0).
+#' @param k Strike price (> 0).
+#' @param tau Time to expiry in years (> 0).
+#' @param r_d Risk-free rate.
+#' @param q Dividend yield.
+#' @param kappa Mean reversion speed (> 0).
+#' @param theta Long-run variance (> 0).
+#' @param xi Volatility of variance (vol-of-vol, > 0).
+#' @param rho Correlation between stock and variance in \code{[-1, 1]}.
+#' @param v_0 Initial variance (> 0).
+#' @param type Either \code{"call"} or \code{"put"}.
+#' @param s_min,s_max Min/Max of the stock grid.
+#' @param v_min Min of the variance grid (must be > 0, e.g. 0.001).
+#' @param v_max Max of the variance grid.
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes, >= 3).
+#' @param n_v Number of intervals in variance grid (\code{n_v + 1} nodes, >= 3).
+#' @param n_t Number of time steps (>= 1).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
+#' @param tolerance Convergence tolerance for penalty iterations.
+#'
+#' @return Option price as a numeric scalar.
+#'
+#' @details
+#' Solves the Heston LCP \eqn{\min(-\mathcal{L}V, V - \phi) = 0} where
+#' the differential operator is:
+#' \deqn{\mathcal{L}V = V_t + \frac{1}{2}vS^2 V_{SS} + \rho\xi v S V_{Sv}
+#'   + \frac{1}{2}\xi^2 v V_{vv} + (r_d - q)S V_S
+#'   + \kappa(\theta - v) V_v - r_d V.}
+#' The penalty parameter is split as \eqn{\lambda/2} across the two
+#' operator-splitting sub-steps. Maximum 200 penalty iterations per time
+#' step with a warning on non-convergence.
+#'
+#' @examples
+#' american_option_heston(100, 100, 1, 0.05, 0, 2, 0.04, 0.5, -0.7, 0.04,
+#'                        "put", 20, 300, 0.001, 1.0, 80, 40, 100, 3,
+#'                        1e4, 1e-8)
+#'
+#' @export
+american_option_heston <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type, s_min, s_max, v_min, v_max, n_s, n_v, n_t, alpha, lambda, tolerance) {
+    .Call(`_LocalVolatility_american_option_heston`, s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type, s_min, s_max, v_min, v_max, n_s, n_v, n_t, alpha, lambda, tolerance)
+}
+
 #' American Option 1D (local volatility, penalty method)
 #'
 #' Prices an American option on a single equity with local volatility using
@@ -262,6 +311,52 @@ european_option_cf_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
     .Call(`_LocalVolatility_european_option_cf_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, adr_ratio)
 }
 
+#' European Option (Heston stochastic volatility)
+#'
+#' Prices a European option under the Heston stochastic volatility model
+#' using a 2D finite-difference PDE with Yanenko operator splitting on
+#' (S, v) and a centered mixed-derivative stencil on non-uniform
+#' Tavella-Randall grids.
+#'
+#' @param s_0 Stock spot price (> 0).
+#' @param k Strike price (> 0).
+#' @param tau Time to expiry in years (> 0).
+#' @param r_d Risk-free rate.
+#' @param q Dividend yield.
+#' @param kappa Mean reversion speed (> 0).
+#' @param theta Long-run variance (> 0).
+#' @param xi Volatility of variance (vol-of-vol, > 0).
+#' @param rho Correlation between stock and variance in \code{[-1, 1]}.
+#' @param v_0 Initial variance (> 0).
+#' @param type Either \code{"call"} or \code{"put"}.
+#' @param s_min,s_max Min/Max of the stock grid.
+#' @param v_min Min of the variance grid (must be > 0, e.g. 0.001).
+#' @param v_max Max of the variance grid.
+#' @param n_s Number of intervals in stock grid (\code{n_s + 1} nodes, >= 3).
+#' @param n_v Number of intervals in variance grid (\code{n_v + 1} nodes, >= 3).
+#' @param n_t Number of time steps (>= 1).
+#' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#'
+#' @return Option price as a numeric scalar.
+#'
+#' @details
+#' Solves the Heston PDE backward in time:
+#' \deqn{V_t + \frac{1}{2}vS^2 V_{SS} + \rho\xi v S V_{Sv}
+#'   + \frac{1}{2}\xi^2 v V_{vv} + (r_d - q)S V_S
+#'   + \kappa(\theta - v) V_v - r_d V = 0.}
+#' Boundary conditions: far-field S uses discounted forward/strike;
+#' v = v_max uses Black-Scholes with \eqn{\sigma = \sqrt{v_{max}}};
+#' v = v_min uses linear extrapolation.
+#'
+#' @examples
+#' european_option_heston(100, 100, 1, 0.05, 0, 2, 0.04, 0.5, -0.7, 0.04,
+#'                        "call", 20, 300, 0.001, 1.0, 80, 40, 100, 3)
+#'
+#' @export
+european_option_heston <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type, s_min, s_max, v_min, v_max, n_s, n_v, n_t, alpha) {
+    .Call(`_LocalVolatility_european_option_heston`, s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type, s_min, s_max, v_min, v_max, n_s, n_v, n_t, alpha)
+}
+
 #' European Option 1D (local volatility)
 #'
 #' Prices a European option on a single equity with local volatility using a
@@ -324,6 +419,161 @@ european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' @export
 european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
     .Call(`_LocalVolatility_european_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha)
+}
+
+#' Heston Model (closed-form, characteristic function)
+#'
+#' Closed-form European option price under the Heston stochastic volatility
+#' model using the characteristic function approach with numerical integration.
+#'
+#' @param s_0 Spot price (> 0).
+#' @param k Strike price (> 0).
+#' @param tau Time to expiry in years (> 0).
+#' @param r_d Risk-free rate.
+#' @param q Dividend yield.
+#' @param kappa Mean reversion speed (> 0).
+#' @param theta Long-run variance (> 0).
+#' @param xi Volatility of variance (vol-of-vol, > 0).
+#' @param rho Correlation between stock and variance in \code{[-1, 1]}.
+#' @param v_0 Initial variance (> 0).
+#' @param type Either \code{"call"} or \code{"put"}.
+#'
+#' @return Option price as a numeric scalar.
+#'
+#' @details
+#' Under the Heston model, the stock price \eqn{S} follows:
+#' \deqn{dS = (r_d - q) S \, dt + \sqrt{v} S \, dW_S}
+#' \deqn{dv = \kappa(\theta - v) \, dt + \xi \sqrt{v} \, dW_v}
+#' with \eqn{dW_S \, dW_v = \rho \, dt}.
+#'
+#' The price is computed via the Heston (1993) characteristic function
+#' with the numerically stable formulation of Albrecher et al. (2007).
+#' Integration uses adaptive Simpson's rule over the semi-infinite
+#' frequency domain.
+#'
+#' @examples
+#' heston_cf(100, 100, 1, 0.05, 0, 2, 0.04, 0.5, -0.7, 0.04, "call")
+#'
+#' @export
+heston_cf <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type) {
+    .Call(`_LocalVolatility_heston_cf`, s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type)
+}
+
+#' American Option 4D Monte Carlo (Double-Heston Quanto, Longstaff-Schwartz)
+#'
+#' Prices an American option on a foreign equity quoted in domestic currency
+#' under double Heston stochastic volatility using Longstaff-Schwartz
+#' least-squares Monte Carlo with \code{std::thread} parallelism for
+#' the forward simulation pass.
+#'
+#' @param s_0 Equity spot price (> 0).
+#' @param x_0 FX spot price, domestic per foreign (> 0).
+#' @param k Strike price in domestic currency (> 0).
+#' @param tau Time to expiry in years (> 0).
+#' @param r_d Domestic risk-free rate.
+#' @param r_f Foreign risk-free rate.
+#' @param q Equity dividend yield.
+#' @param kappa_s Mean reversion speed for equity variance (> 0).
+#' @param theta_s Long-run equity variance (> 0).
+#' @param xi_s Vol-of-vol for equity (> 0).
+#' @param v_s0 Initial equity variance (> 0).
+#' @param kappa_x Mean reversion speed for FX variance (> 0).
+#' @param theta_x Long-run FX variance (> 0).
+#' @param xi_x Vol-of-vol for FX (> 0).
+#' @param v_x0 Initial FX variance (> 0).
+#' @param rho_sx Correlation between S and X.
+#' @param rho_sv Correlation between S and v_S.
+#' @param rho_xv Correlation between X and v_X.
+#' @param rho_svx Correlation between S and v_X (typically ~0).
+#' @param rho_xvs Correlation between X and v_S (typically ~0).
+#' @param rho_vsvx Correlation between v_S and v_X (typically ~0).
+#' @param type Either \code{"call"} or \code{"put"}.
+#' @param n_paths Number of Monte Carlo paths (e.g. 1e5).
+#' @param n_steps Number of exercise dates / time steps (e.g. 50).
+#' @param seed RNG seed for reproducibility.
+#' @param n_basis Number of polynomial basis functions for LSM regression
+#'   (default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).
+#'
+#' @return A list with components \code{price} (option price) and
+#'   \code{std_error} (Monte Carlo standard error estimate).
+#'
+#' @details
+#' The forward simulation uses Euler-Maruyama with full truncation, identical
+#' to \code{\link{mc_european_heston_4d}}. The product \eqn{P_t = S_t X_t} is
+#' stored at each exercise date.
+#'
+#' The backward Longstaff-Schwartz pass regresses continuation values on
+#' polynomial basis functions of P at each exercise date. The regression
+#' determines the optimal exercise boundary. Only in-the-money paths are
+#' used in the regression.
+#'
+#' @examples
+#' mc_american_heston_4d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'   2, 0.04, 0.5, 0.04, 1.5, 0.02, 0.3, 0.02,
+#'   0.3, -0.7, -0.5, 0, 0, 0, "put", 50000, 50, 42, 4)
+#'
+#' @export
+mc_american_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis = 4L) {
+    .Call(`_LocalVolatility_mc_american_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis)
+}
+
+#' European Option 4D Monte Carlo (Double-Heston Quanto)
+#'
+#' Prices a European option on a foreign equity quoted in domestic currency
+#' under double Heston stochastic volatility (one Heston process for the
+#' equity, one for the FX rate) using Monte Carlo simulation with
+#' \code{std::thread} parallelism and antithetic variates.
+#'
+#' @param s_0 Equity spot price (> 0).
+#' @param x_0 FX spot price, domestic per foreign (> 0).
+#' @param k Strike price in domestic currency (> 0).
+#' @param tau Time to expiry in years (> 0).
+#' @param r_d Domestic risk-free rate.
+#' @param r_f Foreign risk-free rate.
+#' @param q Equity dividend yield.
+#' @param kappa_s Mean reversion speed for equity variance (> 0).
+#' @param theta_s Long-run equity variance (> 0).
+#' @param xi_s Vol-of-vol for equity (> 0).
+#' @param v_s0 Initial equity variance (> 0).
+#' @param kappa_x Mean reversion speed for FX variance (> 0).
+#' @param theta_x Long-run FX variance (> 0).
+#' @param xi_x Vol-of-vol for FX (> 0).
+#' @param v_x0 Initial FX variance (> 0).
+#' @param rho_sx Correlation between S and X.
+#' @param rho_sv Correlation between S and v_S.
+#' @param rho_xv Correlation between X and v_X.
+#' @param rho_svx Correlation between S and v_X (typically ~0).
+#' @param rho_xvs Correlation between X and v_S (typically ~0).
+#' @param rho_vsvx Correlation between v_S and v_X (typically ~0).
+#' @param type Either \code{"call"} or \code{"put"}.
+#' @param n_paths Number of Monte Carlo paths (e.g. 1e6).
+#' @param n_steps Number of time steps per path (e.g. 100).
+#' @param seed RNG seed for reproducibility.
+#'
+#' @return A list with components \code{price} (option price) and
+#'   \code{std_error} (Monte Carlo standard error).
+#'
+#' @details
+#' Simulates the 4D system (S, X, v_S, v_X) under the domestic measure using
+#' Euler-Maruyama with full truncation for variance processes. Correlated
+#' Brownian motions are generated via Cholesky decomposition of the 6-parameter
+#' correlation matrix. Antithetic variates halve the variance at no extra
+#' simulation cost.
+#'
+#' The domestic-measure dynamics are:
+#' \deqn{dS = (r_f - q - \rho_{SX}\sqrt{v_S}\sqrt{v_X}) S \, dt + \sqrt{v_S} S \, dW_S}
+#' \deqn{dX = (r_d - r_f) X \, dt + \sqrt{v_X} X \, dW_X}
+#' \deqn{dv_S = \kappa_S(\theta_S - v_S) \, dt + \xi_S \sqrt{v_S} \, dW_{v_S}}
+#' \deqn{dv_X = \kappa_X(\theta_X - v_X) \, dt + \xi_X \sqrt{v_X} \, dW_{v_X}}
+#'
+#' @examples
+#' mc_european_heston_4d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'   2, 0.04, 0.5, 0.04, 1.5, 0.02, 0.3, 0.02,
+#'   0.3, -0.7, -0.5, 0, 0, 0, "call", 100000, 100, 42)
+#'
+#' @export
+mc_european_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed) {
+    .Call(`_LocalVolatility_mc_european_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed)
 }
 
 #' Generate a sequence based on the Tavella and Randall method

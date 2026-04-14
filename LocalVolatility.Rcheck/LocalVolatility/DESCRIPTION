@@ -21,11 +21,11 @@ LinkingTo: Rcpp
 SystemRequirements: C++17
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Suggests: 
-	testthat (>= 3.0.0),
-	covr,
-	rmarkdown,
-	knitr,
-	pkgdown
+Suggests: testthat (>= 3.0.0), covr, rmarkdown, knitr, pkgdown
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+NeedsCompilation: yes
+Packaged: 2026-04-07 05:35:45 UTC; alejandro
+Author: Alejandro Olguin [aut, cre]
+Maintainer: Alejandro Olguin <alejandro_olguin@icloud.com>
+Built: R 4.5.0; aarch64-apple-darwin20; 2026-04-07 05:36:12 UTC; unix

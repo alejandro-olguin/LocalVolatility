@@ -1,0 +1,182 @@
+* installing *source* package ‘LocalVolatility’ ...
+** this is package ‘LocalVolatility’ version ‘3.1.0’
+** using staged installation
+** libs
+using C++ compiler: ‘Homebrew clang version 21.1.5’
+using C++17
+using SDK: ‘’
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c RcppExports.cpp -o RcppExports.o
+In file included from RcppExports.cpp:4:
+In file included from ./../inst/include/LocalVolatility.h:7:
+In file included from ./../inst/include/LocalVolatility_RcppExports.h:7:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c american_2d.cpp -o american_2d.o
+In file included from american_2d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c american_heston.cpp -o american_heston.o
+In file included from american_heston.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c american_lv_1d.cpp -o american_lv_1d.o
+In file included from american_lv_1d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c american_lv_2d.cpp -o american_lv_2d.o
+In file included from american_lv_2d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c batch_solvers.cpp -o batch_solvers.o
+In file included from batch_solvers.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c european_2d.cpp -o european_2d.o
+In file included from european_2d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c european_cf_2d.cpp -o european_cf_2d.o
+In file included from european_cf_2d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c european_heston.cpp -o european_heston.o
+In file included from european_heston.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c european_lv_1d.cpp -o european_lv_1d.o
+In file included from european_lv_1d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c european_lv_2d.cpp -o european_lv_2d.o
+In file included from european_lv_2d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c heston_cf.cpp -o heston_cf.o
+In file included from heston_cf.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c mc_american_heston_4d.cpp -o mc_american_heston_4d.o
+In file included from mc_american_heston_4d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+mc_american_heston_4d.cpp:304:12: warning: unused variable 'disc_to_step' [-Wunused-variable]
+  304 |     double disc_to_step = std::exp(-r_d * t_step);
+      |            ^~~~~~~~~~~~
+mc_american_heston_4d.cpp:216:16: warning: unused variable 'disc_dt' [-Wunused-variable]
+  216 |   const double disc_dt = std::exp(-r_d * dt);
+      |                ^~~~~~~
+3 warnings generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c mc_heston_4d.cpp -o mc_heston_4d.o
+In file included from mc_heston_4d.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+mc_heston_4d.cpp:154:13: warning: unused variable 'paths_per_pair' [-Wunused-variable]
+  154 |   const int paths_per_pair = 2; // antithetic
+      |             ^~~~~~~~~~~~~~
+2 warnings generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include' -I/opt/R/arm64/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/libomp/include   -DSTRICT_R_HEADERS -fPIC  -falign-functions=64 -Wall -g -O2   -c utils.cpp -o utils.o
+In file included from utils.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp.h:27:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/RcppCommon.h:30:
+In file included from /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/Rcpp/include/Rcpp/r/headers.h:71:
+In file included from /Library/Frameworks/R.framework/Resources/include/R.h:70:
+/Library/Frameworks/R.framework/Resources/include/R_ext/Boolean.h:62:36: warning: unknown warning group '-Wfixed-enum-extension', ignored [-Wunknown-warning-option]
+   62 | #  pragma clang diagnostic ignored "-Wfixed-enum-extension"
+      |                                    ^
+1 warning generated.
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++17 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -L/Library/Frameworks/R.framework/Resources/lib -L/opt/R/arm64/lib -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/libomp/lib -lomp -o LocalVolatility.so RcppExports.o american_2d.o american_heston.o american_lv_1d.o american_lv_2d.o batch_solvers.o european_2d.o european_cf_2d.o european_heston.o european_lv_1d.o european_lv_2d.o heston_cf.o mc_american_heston_4d.o mc_heston_4d.o utils.o -F/Library/Frameworks/R.framework/.. -framework R
+installing to /Users/alejandro/Documents/Projects/Packages/LocalVolatility/.claude/worktrees/gallant-curran/LocalVolatility.Rcheck/00LOCK-LocalVolatility/00new/LocalVolatility/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (LocalVolatility)

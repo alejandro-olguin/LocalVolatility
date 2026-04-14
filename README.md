@@ -1,8 +1,10 @@
 # LocalVolatility
 
-Pricing engines for 1D and 2D options under local (and constant) volatility, implemented in C++ via Rcpp and exposed to R. Includes European and American exercise, operator splitting, and robust boundary conditions.
+Pricing engines for options under local and stochastic volatility, implemented in C++ via Rcpp and exposed to R. Includes European and American exercise, operator splitting, and robust boundary conditions.
 
 - Fast finite-difference solvers (Crank-Nicolson in 1D; Yanenko splitting in 2D)
+- **Heston stochastic volatility**: closed-form (characteristic function) and PDE solvers for European and American options
+- **4D Monte Carlo** (double-Heston quanto): European and American (Longstaff-Schwartz) with `std::thread` parallelism, antithetic variates, and full 4×4 correlation via Cholesky
 - Nonuniform Tavella-Randall grids
 - Mixed derivative with correlation in 2D
 - Penalty projection for American options
@@ -119,6 +121,56 @@ prices_am <- batch_price_american_lv(spots, strikes, taus, r_ds, r_fs,
                                       lambda = 1e4, tolerance = 1e-8)
 ```
 
+### Heston stochastic volatility
+
+```r
+# Heston parameters
+kappa <- 2; theta <- 0.04; xi <- 0.5; rho_h <- -0.7; v_0 <- 0.04
+
+# Closed-form (characteristic function)
+price_heston_cf <- heston_cf(100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0, "call")
+
+# European PDE
+price_heston_pde <- european_option_heston(
+  100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0, "call",
+  s_min = 20, s_max = 300, v_min = 0.001, v_max = 1.0,
+  n_s = 80, n_v = 40, n_t = 100, alpha = 3)
+
+# American PDE
+price_heston_am <- american_option_heston(
+  100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0, "put",
+  s_min = 20, s_max = 300, v_min = 0.001, v_max = 1.0,
+  n_s = 80, n_v = 40, n_t = 100, alpha = 3, lambda = 1e4, tolerance = 1e-8)
+
+c(cf = price_heston_cf, pde = price_heston_pde, american = price_heston_am)
+```
+
+### 4D Monte Carlo (double-Heston quanto)
+
+```r
+# European MC: equity and FX each with Heston stochastic vol
+mc_eu <- mc_european_heston_4d(
+  s_0 = 100, x_0 = 20, k = 2000, tau = 1,
+  r_d = 0.05, r_f = 0.02, q = 0.01,
+  kappa_s = 2, theta_s = 0.04, xi_s = 0.5, v_s0 = 0.04,    # equity Heston
+  kappa_x = 1.5, theta_x = 0.02, xi_x = 0.3, v_x0 = 0.02,  # FX Heston
+  rho_sx = 0.3, rho_sv = -0.7, rho_xv = -0.5,               # key correlations
+  rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,                   # cross (usually ~0)
+  type = "call", n_paths = 500000, n_steps = 100, seed = 42)
+c(price = mc_eu$price, se = mc_eu$std_error)
+
+# American MC (Longstaff-Schwartz)
+mc_am <- mc_american_heston_4d(
+  s_0 = 100, x_0 = 20, k = 2000, tau = 1,
+  r_d = 0.05, r_f = 0.02, q = 0.01,
+  kappa_s = 2, theta_s = 0.04, xi_s = 0.5, v_s0 = 0.04,
+  kappa_x = 1.5, theta_x = 0.02, xi_x = 0.3, v_x0 = 0.02,
+  rho_sx = 0.3, rho_sv = -0.7, rho_xv = -0.5,
+  rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,
+  type = "put", n_paths = 100000, n_steps = 50, seed = 42, n_basis = 4)
+c(price = mc_am$price, se = mc_am$std_error)
+```
+
 ### Closed-form (ADR)
 
 ```r
@@ -163,6 +215,20 @@ Same differential operator, with the LCP \(\min\{-\mathcal{L}V, V-\phi\}=0\). We
 splitting (implicit in one dimension per sub-step) and a penalty projection; the penalty is split across
 sub-steps for stability.
 
+### Heston stochastic volatility
+
+Let \(V = V(S,v,t)\) where \(v\) is the instantaneous variance. The Heston (1993) PDE is:
+
+\[ V_t + \tfrac{1}{2}v S^2 V_{SS} + \rho\xi v S V_{Sv} + \tfrac{1}{2}\xi^2 v V_{vv} + (r_d - q) S V_S + \kappa(\theta - v) V_v - r_d V = 0. \]
+
+Parameters: \(\kappa\) (mean reversion speed), \(\theta\) (long-run variance), \(\xi\) (vol-of-vol),
+\(\rho\) (stock-variance correlation), \(v_0\) (initial variance). Terminal condition:
+\(V(S,v,T) = \max(\pm(S-K),0)\).
+
+The closed-form pricer `heston_cf` uses the characteristic function with the "little Heston trap"
+formulation (Albrecher et al. 2007) for numerical stability. The PDE solvers use Yanenko splitting
+on \((S,v)\) with the same infrastructure as the 2D product-option solvers.
+
 ## Numerics
 
 - **Grids:** Tavella-Randall nonuniform grids with parameter `alpha` (returns `n_grid+1` nodes for consistency with the PDE code).
@@ -183,7 +249,7 @@ All solvers validate inputs at entry:
 
 ## Testing
 
-57 tests across 6 test files verify correctness:
+115 tests across 8 test files verify correctness:
 
 | Test file | Coverage |
 |-----------|----------|
@@ -193,6 +259,8 @@ All solvers validate inputs at entry:
 | `test_tavella_randall.R` | Endpoint exactness, monotonicity, node concentration, input rejection |
 | `test_2d_local_equals_constant.R` | Local-vol = constant-vol (European/American, call/put), PDE vs closed-form with high r_f |
 | `test_batch_solvers.R` | Batch vs single solver (European/American), mixed taus/types, input validation |
+| `test_heston.R` | CF put-call parity, PDE vs CF convergence (call/put), American >= European, input validation |
+| `test_mc_heston_4d.R` | MC positivity, reproducibility, put-call parity, MC vs PDE (xi→0), SE scaling, American >= European |
 
 Run tests with:
 
