@@ -35,6 +35,11 @@
 #' is split as \eqn{\lambda/2} across the two operator-splitting sub-steps.
 #' Maximum 200 penalty iterations per time step with a warning on non-convergence.
 #'
+#' @examples
+#' american_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'                    0.2, 0.15, 0.3, "put",
+#'                    10, 300, 1, 60, 20, 20, 25, 3, 1e4, 1e-8)
+#'
 #' @export
 american_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance) {
     .Call(`_LocalVolatility_american_option_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance)
@@ -117,6 +122,11 @@ american_option_heston <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v
 #' constraint is enforced through a penalty-projection fixed-point iteration at each
 #' time step, with a maximum of 200 iterations and a warning on non-convergence.
 #'
+#' @examples
+#' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+#' american_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "put",
+#'                    1, 400, 50, 50, 1e4, 1e-8)
+#'
 #' @export
 american_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t, lambda, tolerance) {
     .Call(`_LocalVolatility_american_option_lv`, s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t, lambda, tolerance)
@@ -158,6 +168,13 @@ american_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' across the two operator-splitting sub-steps. Maximum 200 penalty iterations
 #' per time step with a warning on non-convergence.
 #'
+#' @examples
+#' SigmaS <- matrix(0.2, nrow = 21, ncol = 25)
+#' SigmaX <- matrix(0.15, nrow = 21, ncol = 25)
+#' american_option_lv_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'                       SigmaS, SigmaX, 0.3, "put",
+#'                       10, 300, 1, 60, 20, 20, 25, 3, 1e4, 1e-8)
+#'
 #' @export
 american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance) {
     .Call(`_LocalVolatility_american_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance)
@@ -192,6 +209,18 @@ american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 #' option's RHS is solved via forward/back substitution — O(n_s) per option
 #' per time step instead of O(2 * n_s) for a full Thomas solve.
 #'
+#' @examples
+#' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+#' batch_price_european_lv(
+#'   spots   = rep(100, 3),
+#'   strikes = c(90, 100, 110),
+#'   taus    = rep(1, 3),
+#'   r_ds    = rep(0.05, 3),
+#'   r_fs    = rep(0.02, 3),
+#'   sigma   = Sigma,
+#'   types   = rep("call", 3),
+#'   s_min = 1, s_max = 400, n_s = 50, n_t = 50)
+#'
 #' @export
 batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t) {
     .Call(`_LocalVolatility_batch_price_european_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t)
@@ -224,6 +253,19 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #' The solver uses Crank-Nicolson with a penalty-projection fixed-point
 #' iteration for the American constraint, capped at 200 iterations per time
 #' step. Options are solved in parallel across CPU cores using std::thread.
+#'
+#' @examples
+#' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+#' batch_price_american_lv(
+#'   spots   = rep(100, 3),
+#'   strikes = c(90, 100, 110),
+#'   taus    = rep(1, 3),
+#'   r_ds    = rep(0.05, 3),
+#'   r_fs    = rep(0.02, 3),
+#'   sigma   = Sigma,
+#'   types   = rep("put", 3),
+#'   s_min = 1, s_max = 400, n_s = 50, n_t = 50,
+#'   lambda = 1e4, tolerance = 1e-8)
 #'
 #' @export
 batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance) {
@@ -262,6 +304,11 @@ batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #' in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. Far-field Dirichlet
 #' boundaries use \eqn{e^{-(r_f + q)\tau}} on the \eqn{S \cdot X} leg and
 #' \eqn{e^{-r_d \tau}} on \eqn{K}.
+#'
+#' @examples
+#' european_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'                    0.2, 0.15, 0.3, "call",
+#'                    10, 300, 1, 60, 20, 20, 25, 3)
 #'
 #' @export
 european_option_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
@@ -377,6 +424,10 @@ european_option_heston <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v
 #'
 #' @return Option price as a numeric scalar.
 #'
+#' @examples
+#' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+#' european_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "call", 1, 400, 50, 50)
+#'
 #' @export
 european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t) {
     .Call(`_LocalVolatility_european_option_lv`, s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t)
@@ -415,6 +466,13 @@ european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' discounting at \eqn{r_d}. When \code{sigma_s} and \code{sigma_x} are
 #' constant-valued matrices, prices match the constant-vol solver to numerical
 #' tolerance.
+#'
+#' @examples
+#' SigmaS <- matrix(0.2, nrow = 21, ncol = 25)
+#' SigmaX <- matrix(0.15, nrow = 21, ncol = 25)
+#' european_option_lv_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+#'                       SigmaS, SigmaX, 0.3, "call",
+#'                       10, 300, 1, 60, 20, 20, 25, 3)
 #'
 #' @export
 european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
@@ -595,6 +653,11 @@ mc_european_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_
 #' equally spaced points. At each point, it computes the corresponding value based on the
 #' Tavella and Randall method, which uses the hyperbolic sine function to ensure a smooth
 #' transition between \code{x_min} and \code{x_max}.
+#'
+#' @examples
+#' grid <- tavella_randall(100, 3, 1, 400, 50)
+#' plot(grid, rep(0, length(grid)), pch = "|",
+#'      xlab = "S", ylab = "", main = "Tavella-Randall grid")
 #'
 #' @export
 tavella_randall <- function(x_0, alpha, x_min, x_max, n_grid) {

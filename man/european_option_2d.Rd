@@ -76,3 +76,9 @@ in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. Far-field Dirichlet
 boundaries use \eqn{e^{-(r_f + q)\tau}} on the \eqn{S \cdot X} leg and
 \eqn{e^{-r_d \tau}} on \eqn{K}.
 }
+\examples{
+european_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+                   0.2, 0.15, 0.3, "call",
+                   10, 300, 1, 60, 20, 20, 25, 3)
+
+}

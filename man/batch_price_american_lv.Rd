@@ -60,3 +60,17 @@ The solver uses Crank-Nicolson with a penalty-projection fixed-point
 iteration for the American constraint, capped at 200 iterations per time
 step. Options are solved in parallel across CPU cores using std::thread.
 }
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+batch_price_american_lv(
+  spots   = rep(100, 3),
+  strikes = c(90, 100, 110),
+  taus    = rep(1, 3),
+  r_ds    = rep(0.05, 3),
+  r_fs    = rep(0.02, 3),
+  sigma   = Sigma,
+  types   = rep("put", 3),
+  s_min = 1, s_max = 400, n_s = 50, n_t = 50,
+  lambda = 1e4, tolerance = 1e-8)
+
+}

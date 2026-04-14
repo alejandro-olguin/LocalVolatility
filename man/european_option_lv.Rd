@@ -36,3 +36,8 @@ Prices a European option on a single equity with local volatility using a
 1D Crank-Nicolson finite-difference scheme, time-dependent Dirichlet
 boundaries, and linear interpolation at the spot.
 }
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+european_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "call", 1, 400, 50, 50)
+
+}

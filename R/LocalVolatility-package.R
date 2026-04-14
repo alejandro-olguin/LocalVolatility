@@ -1,0 +1,63 @@
+#' @keywords internal
+#'
+#' @section 1D solvers (single equity):
+#' \describe{
+#'   \item{\code{\link{european_option_lv}}}{European option under local volatility
+#'     (Crank-Nicolson).}
+#'   \item{\code{\link{american_option_lv}}}{American option under local volatility
+#'     (penalty projection).}
+#'   \item{\code{\link{batch_price_european_lv}}}{Batch European pricing with
+#'     shared LHS factorisation.}
+#'   \item{\code{\link{batch_price_american_lv}}}{Batch American pricing with
+#'     \code{std::thread} parallelism.}
+#' }
+#'
+#' @section 2D solvers (equity + FX):
+#' \describe{
+#'   \item{\code{\link{european_option_2d}}, \code{\link{american_option_2d}}}{
+#'     Constant volatility, Yanenko operator splitting.}
+#'   \item{\code{\link{european_option_lv_2d}}, \code{\link{american_option_lv_2d}}}{
+#'     Local volatility surfaces for S and X.}
+#'   \item{\code{\link{european_option_cf_2d}}}{Closed-form Black-Scholes for
+#'     ADR products.}
+#' }
+#'
+#' @section Heston stochastic volatility:
+#' \describe{
+#'   \item{\code{\link{heston_cf}}}{Closed-form European via the Heston
+#'     characteristic function (Albrecher et al. 2007).}
+#'   \item{\code{\link{european_option_heston}}, \code{\link{american_option_heston}}}{
+#'     2D PDE on (S, v) with Yanenko splitting.}
+#' }
+#'
+#' @section 4D Monte Carlo (double-Heston quanto):
+#' \describe{
+#'   \item{\code{\link{mc_european_heston_4d}}}{European MC with antithetic
+#'     variates and Cholesky-correlated 4D Brownian motion.}
+#'   \item{\code{\link{mc_american_heston_4d}}}{American MC via
+#'     Longstaff-Schwartz least-squares regression.}
+#' }
+#'
+#' @section Utilities:
+#' \describe{
+#'   \item{\code{\link{tavella_randall}}}{Smooth nonuniform grid generation.}
+#' }
+#'
+#' @references
+#' Heston, S. L. (1993). A closed-form solution for options with stochastic
+#' volatility with applications to bond and currency options.
+#' \emph{The Review of Financial Studies}, 6(2), 327--343.
+#'
+#' Albrecher, H., Mayer, P., Schoutens, W., and Tistaert, J. (2007).
+#' The little Heston trap. \emph{Wilmott Magazine}, January, 83--92.
+#'
+#' Tavella, D. and Randall, C. (2000). \emph{Pricing Financial Instruments:
+#' The Finite Difference Method}. Wiley.
+#'
+#' Longstaff, F. A. and Schwartz, E. S. (2001). Valuing American options by
+#' simulation: A simple least-squares approach. \emph{The Review of Financial
+#' Studies}, 14(1), 113--147.
+#'
+#' @useDynLib LocalVolatility, .registration = TRUE
+#' @importFrom Rcpp evalCpp
+"_PACKAGE"

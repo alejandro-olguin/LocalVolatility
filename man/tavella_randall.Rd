@@ -32,3 +32,9 @@ equally spaced points. At each point, it computes the corresponding value based 
 Tavella and Randall method, which uses the hyperbolic sine function to ensure a smooth
 transition between \code{x_min} and \code{x_max}.
 }
+\examples{
+grid <- tavella_randall(100, 3, 1, 400, 50)
+plot(grid, rep(0, length(grid)), pch = "|",
+     xlab = "S", ylab = "", main = "Tavella-Randall grid")
+
+}

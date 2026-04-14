@@ -144,6 +144,11 @@ double isinh(double x) {
 //' Tavella and Randall method, which uses the hyperbolic sine function to ensure a smooth
 //' transition between \code{x_min} and \code{x_max}.
 //'
+//' @examples
+//' grid <- tavella_randall(100, 3, 1, 400, 50)
+//' plot(grid, rep(0, length(grid)), pch = "|",
+//'      xlab = "S", ylab = "", main = "Tavella-Randall grid")
+//'
 //' @export
 // [[Rcpp::export]]
 NumericVector tavella_randall(double x_0,

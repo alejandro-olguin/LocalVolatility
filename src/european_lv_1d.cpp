@@ -135,6 +135,10 @@ double european_option_lv(double s_0,
 //'
 //' @return Option price as a numeric scalar.
 //'
+//' @examples
+//' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+//' european_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "call", 1, 400, 50, 50)
+//'
 //' @export
 // [[Rcpp::export]]
 double european_option_lv(double s_0,

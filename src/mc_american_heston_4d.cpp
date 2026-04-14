@@ -181,6 +181,12 @@ Rcpp::List mc_american_heston_4d(
   if (n_steps < 1) stop("n_steps must be >= 1");
   if (n_basis < 2 || n_basis > 8) stop("n_basis must be between 2 and 8");
 
+  // Guard against memory exhaustion: P_paths needs n_paths * (n_steps+1) doubles
+  const double alloc_bytes = static_cast<double>(n_paths) * (n_steps + 1) * sizeof(double);
+  if (alloc_bytes > 2e9)
+    stop("Requested allocation (n_paths * n_steps) exceeds 2 GB safety limit. "
+         "Reduce n_paths or n_steps.");
+
   auto check_rho = [](double r, const char* name) {
     if (r < -1.0 || r > 1.0) {
       std::string msg = std::string(name) + " must be within [-1, 1]";
@@ -300,9 +306,6 @@ Rcpp::List mc_american_heston_4d(
 
   // Backward from n_steps-1 to 1 (step 0 is t=0, no exercise there)
   for (int step = n_steps - 1; step >= 1; --step) {
-    double t_step = step * dt;
-
-
     // Find ITM paths at this step
     std::vector<int> itm_indices;
     itm_indices.reserve(n_paths / 2);

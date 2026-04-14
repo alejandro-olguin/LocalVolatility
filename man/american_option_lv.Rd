@@ -60,3 +60,9 @@ volatility \eqn{\sigma(S, t)}, discretised via Crank-Nicolson. The early exercis
 constraint is enforced through a penalty-projection fixed-point iteration at each
 time step, with a maximum of 200 iterations and a warning on non-convergence.
 }
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+american_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "put",
+                   1, 400, 50, 50, 1e4, 1e-8)
+
+}

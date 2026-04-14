@@ -1,0 +1,13 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "{LocalVolatility}: Option Pricing Under Local and Stochastic Volatility in {R}",
+  author   = person("Alejandro", "Olguin"),
+  journal  = "Journal of Statistical Software",
+  year     = "2026",
+  note     = "Forthcoming",
+  textVersion = paste(
+    "Olguin, A. (2026).",
+    "LocalVolatility: Option Pricing Under Local and Stochastic Volatility in R.",
+    "Journal of Statistical Software. Forthcoming."
+  )
+)

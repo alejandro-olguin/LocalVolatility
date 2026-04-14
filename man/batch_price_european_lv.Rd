@@ -57,3 +57,16 @@ LHS depends only on sigma and the grid, not on the strike), and each
 option's RHS is solved via forward/back substitution — O(n_s) per option
 per time step instead of O(2 * n_s) for a full Thomas solve.
 }
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+batch_price_european_lv(
+  spots   = rep(100, 3),
+  strikes = c(90, 100, 110),
+  taus    = rep(1, 3),
+  r_ds    = rep(0.05, 3),
+  r_fs    = rep(0.02, 3),
+  sigma   = Sigma,
+  types   = rep("call", 3),
+  s_min = 1, s_max = 400, n_s = 50, n_t = 50)
+
+}

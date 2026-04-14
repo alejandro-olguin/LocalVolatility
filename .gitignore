@@ -16,3 +16,6 @@ coverage/
 covr.*
 vignettes/*.html
 .github/*.html
+*.Rcheck/
+*.tar.gz
+.claude/

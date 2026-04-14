@@ -240,6 +240,13 @@ double european_option_lv_2d(double s_0,
 //' constant-valued matrices, prices match the constant-vol solver to numerical
 //' tolerance.
 //'
+//' @examples
+//' SigmaS <- matrix(0.2, nrow = 21, ncol = 25)
+//' SigmaX <- matrix(0.15, nrow = 21, ncol = 25)
+//' european_option_lv_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+//'                       SigmaS, SigmaX, 0.3, "call",
+//'                       10, 300, 1, 60, 20, 20, 25, 3)
+//'
 //' @export
 // [[Rcpp::export]]
 double european_option_lv_2d(double s_0,

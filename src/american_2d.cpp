@@ -277,6 +277,11 @@ double american_option_2d(double s_0,
 //' is split as \eqn{\lambda/2} across the two operator-splitting sub-steps.
 //' Maximum 200 penalty iterations per time step with a warning on non-convergence.
 //'
+//' @examples
+//' american_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+//'                    0.2, 0.15, 0.3, "put",
+//'                    10, 300, 1, 60, 20, 20, 25, 3, 1e4, 1e-8)
+//'
 //' @export
 // [[Rcpp::export]]
 double american_option_2d(double s_0,
