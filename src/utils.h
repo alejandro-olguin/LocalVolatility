@@ -32,11 +32,11 @@ Rcpp::NumericVector thomas_algorithm(const Rcpp::NumericVector& a,
 // -------- Misc --------
 double isinh(double x);
 
-// Returns n+1 nodes (0..n), including x_min and x_max
-Rcpp::NumericVector tavella_randall(double x0,
+// Returns n_grid+1 nodes (0..n_grid), including x_min and x_max
+Rcpp::NumericVector tavella_randall(double x_0,
                                     double alpha,
                                     double x_min,
                                     double x_max,
-                                    int n);
+                                    int n_grid);
 
 #endif // UTILS_H

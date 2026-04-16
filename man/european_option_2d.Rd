@@ -41,33 +41,44 @@ european_option_2d(
 
 \item{q}{Dividend yield.}
 
-\item{sigma_s}{Constant volatility of the stock.}
+\item{sigma_s}{Constant volatility of the stock (>= 0).}
 
-\item{sigma_x}{Constant volatility of the FX.}
+\item{sigma_x}{Constant volatility of the FX (>= 0).}
 
-\item{rho}{Correlation between the stock and the FX in \verb{[-1, 1]}.}
+\item{rho}{Correlation between the stock and the FX in \code{[-1, 1]}.}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the stock grid.}
 
 \item{x_min, x_max}{Min/Max of the FX grid.}
 
-\item{n_s}{Number of intervals in stock grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in stock grid (\code{n_s + 1} nodes).}
 
-\item{n_x}{Number of intervals in FX grid (n_x + 1 nodes).}
+\item{n_x}{Number of intervals in FX grid (\code{n_x + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 
-\item{alpha}{Grid clustering parameter for Tavella–Randall grids (> 0).}
+\item{alpha}{Grid clustering parameter for Tavella-Randall grids (> 0).}
+}
+\value{
+Option price as a numeric scalar.
 }
 \description{
-Prices a European option on an equity quoted in a foreign currency using a 2D finite-difference PDE
-with Yanenko operator splitting, constant volatilities (sigma_s, sigma_x), and a centered mixed-derivative.
+Prices a European option on an equity quoted in a foreign currency using a
+2D finite-difference PDE with Yanenko operator splitting, constant
+volatilities, and a centered mixed-derivative stencil on a non-uniform
+Tavella-Randall grid.
 }
 \details{
-Domestic-measure drift and discounting are applied. In the S-direction, the drift is
-mu_S = r_f - q - rho * sigma_s * sigma_x. In the X-direction, the drift is r_d - r_f, and
-discounting is at r_d. Far-field Dirichlet boundaries use exp(-q * tau) on the S·X term and
-exp(-r_d * tau) on K. The spot (s_0, x_0) price is obtained via bilinear interpolation.
+Domestic-measure dynamics: drift \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X}
+in S, \eqn{r_d - r_f} in X, discounting at \eqn{r_d}. Far-field Dirichlet
+boundaries use \eqn{e^{-(r_f + q)\tau}} on the \eqn{S \cdot X} leg and
+\eqn{e^{-r_d \tau}} on \eqn{K}.
+}
+\examples{
+european_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+                   0.2, 0.15, 0.3, "call",
+                   10, 300, 1, 60, 20, 20, 25, 3)
+
 }

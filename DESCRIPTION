@@ -1,14 +1,26 @@
 Package: LocalVolatility
 Type: Package
-Title: Pricing Engines for Local Volatility Models
-Version: 2.0.0
-Date: 2025-10-24
+Title: Option Pricing Under Local and Stochastic Volatility
+Version: 3.2.0
+Date: 2026-04-13
 Encoding: UTF-8
-Authors@R: 
-	person("Alejandro", "Olguin", email = "alejandro_olguin@icloud.com", role = c("aut", "cre"))
-Description: Finite-difference PDE pricing engines for local volatility models in 1D and 2D,
-	covering European and American options with constant and local volatilities. Implemented in C++
-	via Rcpp, including Tavella–Randall grids, operator splitting, and a penalty method.
+Authors@R:
+	person("Alejandro", "Olguin",
+	       email = "alejandro_olguin@icloud.com",
+	       role = c("aut", "cre"),
+	       )
+Description: Finite-difference PDE solvers and Monte Carlo engines for pricing
+	European and American options under local and stochastic volatility models,
+	implemented in C++ via 'Rcpp'. Includes one-dimensional Crank-Nicolson solvers
+	with local volatility surfaces, two-dimensional Yanenko operator-splitting
+	solvers for quanto/ADR products (equity plus FX), Heston (1993)
+	<doi:10.1093/rfs/6.2.327> stochastic volatility solvers (closed-form
+	characteristic function and PDE), and a four-dimensional Monte Carlo engine
+	for double-Heston quanto options with Longstaff-Schwartz
+	<doi:10.1093/rfs/14.1.113> least-squares regression for American exercise.
+	Supports Tavella-Randall nonuniform grids, penalty-projection for early
+	exercise, antithetic variates, and 'std::thread' parallelism for
+	calibration-optimised batch pricing.
 License: GPL (>= 2)
 URL: https://github.com/alejandro-olguin/LocalVolatility
 BugReports: https://github.com/alejandro-olguin/LocalVolatility/issues
@@ -18,7 +30,7 @@ LinkingTo: Rcpp
 SystemRequirements: C++17
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Suggests: 
+Suggests:
 	testthat (>= 3.0.0),
 	covr,
 	rmarkdown,

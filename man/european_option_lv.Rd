@@ -4,7 +4,7 @@
 \alias{european_option_lv}
 \title{European Option 1D (local volatility)}
 \usage{
-european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
+european_option_lv(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max, n_s, n_t)
 }
 \arguments{
 \item{s_0}{Stock spot price.}
@@ -15,20 +15,29 @@ european_option_lv(s_0, k, tau, r_d, q, sigma, type, s_min, s_max, n_s, n_t)
 
 \item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield.}
+\item{r_f}{Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).}
 
-\item{sigma}{Local volatility matrix sampled on the grid; commonly (n_s + 1) x (n_t + 1) or
-(n_s + 1) x n_t depending on solver indexing.}
+\item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
+sampled on the spatial grid (rows) and time grid including both endpoints (columns).}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the asset grid.}
 
-\item{n_s}{Number of intervals in the asset grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in the asset grid (\code{n_s + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 }
+\value{
+Option price as a numeric scalar.
+}
 \description{
-Prices a European option on a single equity with local volatility using a 1D Crank–Nicolson
-finite-difference scheme, time-dependent boundaries, and linear interpolation at the spot.
+Prices a European option on a single equity with local volatility using a
+1D Crank-Nicolson finite-difference scheme, time-dependent Dirichlet
+boundaries, and linear interpolation at the spot.
+}
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+european_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "call", 1, 400, 50, 50)
+
 }

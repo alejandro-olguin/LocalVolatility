@@ -4,10 +4,10 @@
 \alias{tavella_randall}
 \title{Generate a sequence based on the Tavella and Randall method}
 \usage{
-tavella_randall(x0, alpha, x_min, x_max, n)
+tavella_randall(x_0, alpha, x_min, x_max, n_grid)
 }
 \arguments{
-\item{x0}{Numeric. The central value around which the sequence is generated.}
+\item{x_0}{Numeric. The central value around which the sequence is generated.}
 
 \item{alpha}{Numeric. A scaling parameter that controls the shape of the sequence.}
 
@@ -15,10 +15,11 @@ tavella_randall(x0, alpha, x_min, x_max, n)
 
 \item{x_max}{Numeric. The maximum value of the sequence.}
 
-\item{n}{Integer. The number of values in the generated sequence.}
+\item{n_grid}{Integer. The number of intervals in the generated sequence
+(\code{n_grid + 1} nodes).}
 }
 \value{
-A numeric vector of length \code{n} containing the generated sequence.
+A numeric vector of length \code{n_grid + 1} containing the generated sequence.
 }
 \description{
 This function generates a sequence of numbers following the Tavella and Randall method,
@@ -26,8 +27,14 @@ which applies a combination of hyperbolic sine transformations to create a smoot
 between a specified minimum and maximum value.
 }
 \details{
-The function calculates the sequence by dividing the interval \verb{[0, 1]} into \code{n}
+The function divides the interval \code{[0, 1]} into \code{n_grid}
 equally spaced points. At each point, it computes the corresponding value based on the
 Tavella and Randall method, which uses the hyperbolic sine function to ensure a smooth
 transition between \code{x_min} and \code{x_max}.
+}
+\examples{
+grid <- tavella_randall(100, 3, 1, 400, 50)
+plot(grid, rep(0, length(grid)), pch = "|",
+     xlab = "S", ylab = "", main = "Tavella-Randall grid")
+
 }

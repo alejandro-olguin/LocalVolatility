@@ -7,8 +7,8 @@ using namespace Rcpp;
 
 //' European Option 2D (closed-form, ADR)
 //'
-//' Closed-form Black–Scholes price for a European option on an ADR whose
-//' underlying is the product S·X scaled by the ADR ratio n: ADR = (S·X)/n.
+//' Closed-form Black-Scholes price for a European option on an ADR whose
+//' underlying is the product S*X scaled by the ADR ratio: ADR = (S*X)/adr_ratio.
 //' Assumes constant volatilities for S and X and correlation rho. The
 //' effective ADR log-volatility is
 //'   sigma_adr = sqrt(sigma_s^2 + sigma_x^2 + 2 * rho * sigma_s * sigma_x).
@@ -26,22 +26,22 @@ using namespace Rcpp;
 //' @param q Dividend yield for the equity.
 //' @param sigma_s Constant volatility of the stock.
 //' @param sigma_x Constant volatility of the FX.
-//' @param rho Correlation between the stock and the FX in `[-1, 1]`.
-//' @param n ADR ratio (shares per ADR), usually >= 1.
-//' @param type Either "call" or "put" (case-insensitive).
+//' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
+//' @param type Either \code{"call"} or \code{"put"}.
+//' @param adr_ratio ADR ratio (shares per ADR), usually >= 1.
 //'
 //' @return Option price as a numeric scalar.
 //'
 //' @details
-//' This is the standard Black–Scholes formula applied to ADR = (S·X)/n with
-//' log-normal dynamics under the domestic measure. Let ADR_0 = (s_0 * x_0)/n and
+//' This is the standard Black-Scholes formula applied to ADR = (S*X)/adr_ratio with
+//' log-normal dynamics under the domestic measure. Let ADR_0 = (s_0 * x_0)/adr_ratio and
 //' sigma_adr as above. Then
-//'   `d1 = [ln(ADR_0 / K) + (r_d - q + 0.5 * sigma_adr^2) * tau] / (sigma_adr * sqrt(tau))`,
-//'   `d2 = d1 - sigma_adr * sqrt(tau)`.
-//' The call is ADR_0 `e^{-q tau} N(d1) - K e^{-r_d tau} N(d2)`; the put uses put-call parity.
+//'   \code{d1 = [ln(ADR_0 / K) + (r_d - q + 0.5 * sigma_adr^2) * tau] / (sigma_adr * sqrt(tau))},
+//'   \code{d2 = d1 - sigma_adr * sqrt(tau)}.
+//' The call is \code{ADR_0 * exp(-q*tau) * N(d1) - K * exp(-r_d*tau) * N(d2)}; the put uses put-call parity.
 //'
 //' @examples
-//' european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01, 0.2, 0.1, 0.3, 1, "call")
+//' european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01, 0.2, 0.1, 0.3, "call", 1)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -55,17 +55,17 @@ double european_option_cf_2d(double s_0,
                              double sigma_s,
                              double sigma_x,
                              double rho,
-                             int n,
-                             String type) {
+                             String type,
+                             int adr_ratio) {
 
   // --- input validation ---
-  if (n <= 0) stop("n must be >= 1");
+  if (adr_ratio <= 0) stop("adr_ratio must be >= 1");
   if (k <= 0.0) stop("k must be > 0");
   if (s_0 <= 0.0 || x_0 <= 0.0) stop("s_0 and x_0 must be > 0");
   if (tau < 0.0) stop("tau must be >= 0");
   if (rho < -1.0 || rho > 1.0) stop("rho must be within [-1, 1]");
 
-  const double adr_0 = (s_0 * x_0) / static_cast<double>(n);
+  const double adr_0 = (s_0 * x_0) / static_cast<double>(adr_ratio);
   const double sigma_adr2 = sigma_s * sigma_s
                           + sigma_x * sigma_x
                           + 2.0 * rho * sigma_s * sigma_x;
@@ -75,8 +75,7 @@ double european_option_cf_2d(double s_0,
   auto payoff_call = [&](double spot) { return std::max(spot - k, 0.0); };
   auto payoff_put  = [&](double spot) { return std::max(k - spot, 0.0); };
 
-  const std::string t = type;
-  const bool is_call = (t == "call" || t == "Call" || t == "CALL");
+  const bool is_call = (type == "call");
 
   if (tau == 0.0) {
     return is_call ? payoff_call(adr_0) : payoff_put(adr_0);

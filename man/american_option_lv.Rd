@@ -9,7 +9,7 @@ american_option_lv(
   k,
   tau,
   r_d,
-  q,
+  r_f,
   sigma,
   type,
   s_min,
@@ -29,23 +29,40 @@ american_option_lv(
 
 \item{r_d}{Risk-free rate (domestic).}
 
-\item{q}{Dividend yield.}
+\item{r_f}{Foreign risk-free rate or cost-of-carry rate (e.g. dividend yield).}
 
-\item{sigma}{Local volatility matrix sampled on the grid.}
+\item{sigma}{Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)},
+sampled on the spatial grid (rows) and time grid including both endpoints (columns).}
 
-\item{type}{Either "call" or "put".}
+\item{type}{Either \code{"call"} or \code{"put"}.}
 
 \item{s_min, s_max}{Min/Max of the underlying prices grid.}
 
-\item{n_s}{Number of intervals in the asset grid (n_s + 1 nodes).}
+\item{n_s}{Number of intervals in the asset grid (\code{n_s + 1} nodes).}
 
 \item{n_t}{Number of time steps.}
 
-\item{lambda}{Penalty parameter (> 1).}
+\item{lambda}{Penalty parameter (> 0, typically 1e4 to 1e6).}
 
-\item{tolerance}{Relative error tolerance for the penalty iterations.}
+\item{tolerance}{Convergence tolerance for penalty iterations.}
+}
+\value{
+Option price as a numeric scalar.
 }
 \description{
-Prices an American option on a single equity with local volatility using operator splitting
-and a penalty-projection method for the early exercise constraint.
+Prices an American option on a single equity with local volatility using
+Crank-Nicolson finite differences and a penalty-projection method for the
+early exercise constraint.
+}
+\details{
+The solver uses the standard Black-Scholes PDE with time- and state-dependent
+volatility \eqn{\sigma(S, t)}, discretised via Crank-Nicolson. The early exercise
+constraint is enforced through a penalty-projection fixed-point iteration at each
+time step, with a maximum of 200 iterations and a warning on non-convergence.
+}
+\examples{
+Sigma <- matrix(0.2, nrow = 51, ncol = 51)
+american_option_lv(100, 100, 1, 0.05, 0.02, Sigma, "put",
+                   1, 400, 50, 50, 1e4, 1e-8)
+
 }

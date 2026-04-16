@@ -1,36 +1,362 @@
 ---
-title: "LocalVolatility: PDE Pricing in 1D and 2D"
+title: "Option Pricing Under Local and Stochastic Volatility with LocalVolatility"
+author: "Alejandro Olguin"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{LocalVolatility: PDE Pricing in 1D and 2D}
+  %\VignetteIndexEntry{Option Pricing Under Local and Stochastic Volatility with LocalVolatility}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-```
-
-# Overview
-
-This vignette summarizes the PDEs, boundary conditions, and usage examples for the package.
-
-## PDEs
-
-We solve the backward Kolmogorov PDEs under the domestic measure. For 2D European options:
-
-$$
-V_t + \tfrac{1}{2}(\sigma_S S)^2 V_{SS} + \tfrac{1}{2}(\sigma_X X)^2 V_{XX} + \rho\,\sigma_S\,\sigma_X\,S X\, V_{SX}
-+ (r_f - q - \rho\,\sigma_S\,\sigma_X) S V_S + (r_d - r_f) X V_X - r_d V = 0.
-$$
-
-## Examples
-
-```{r eval=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 6,
+  fig.height = 4
+)
 library(LocalVolatility)
-# Quick constant-vol European 2D price
-price <- european_option_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
-                            0.2, 0.15, 0.3, "call",
-                            10, 300, 1, 60, 40, 40, 50, 3)
-price
 ```
+
+## Introduction
+
+Derivative pricing under non-constant volatility is central to modern
+quantitative finance. The Black-Scholes model assumes constant volatility, but
+empirical evidence consistently shows that implied volatility varies across
+strikes and maturities---the volatility smile. Two dominant frameworks address
+this: **local volatility** models, where $\sigma = \sigma(S, t)$ is a
+deterministic function of the underlying and time [@dupire1994], and
+**stochastic volatility** models, where variance follows its own diffusion
+process [@heston1993].
+
+The **LocalVolatility** package provides a unified suite of C++ pricing engines
+exposed to R via Rcpp, covering:
+
+1. **1D finite-difference solvers** for European and American options under
+   local volatility (Crank-Nicolson with penalty projection).
+2. **2D finite-difference solvers** for quanto/ADR products on equity + FX under
+   local or constant volatility (Yanenko operator splitting).
+3. **Heston stochastic volatility** solvers: a closed-form characteristic
+   function pricer and 2D PDE solvers on $(S, v)$.
+4. **4D Monte Carlo** for double-Heston quanto options with `std::thread`
+   parallelism, antithetic variates, and Longstaff-Schwartz regression for
+   American exercise.
+5. **Batch solvers** optimised for calibration workloads with shared LHS
+   factorisation and thread parallelism.
+
+### Related software
+
+Several R packages address option pricing. **RQuantLib** [@rquantlib] provides
+bindings to the QuantLib library, including Black-Scholes and Heston models.
+**fOptions** [@foptions] offers closed-form solutions for standard models.
+**NMOF** [@nmof] provides numerical methods for finance including option pricing
+utilities. However, none of these packages simultaneously offer (i) local
+volatility PDE solvers in 1D and 2D, (ii) Heston PDE solvers, (iii) 4D
+Monte Carlo with Longstaff-Schwartz for American exercise, and (iv)
+calibration-optimised batch solvers---all in a single, self-contained package
+with no external compiled library dependencies.
+
+## Mathematical framework
+
+### 1D local volatility
+
+Under the domestic money-market measure, the value $v(S, t)$ of a European
+option on a single equity with local volatility $\sigma(S, t)$ satisfies:
+
+$$
+v_t + \tfrac{1}{2}\sigma(S,t)^2 S^2 v_{SS} + (r_d - r_f) S v_S - r_d v = 0
+$$
+
+with terminal condition $v(S, T) = \max(\pm(S - K), 0)$ for calls (+) and
+puts (-). Boundary conditions use the discounted European asymptotes:
+
+- $S \to 0$: $v \to 0$ (call), $v \to K e^{-r_d \tau}$ (put).
+- $S \to S_{\max}$: $v \to S e^{-r_f \tau} - K e^{-r_d \tau}$ (call),
+  $v \to 0$ (put).
+
+For American options, the pricing problem becomes a linear complementarity
+problem (LCP):
+$$
+\min\{-\mathcal{L}v,\; v - \phi\} = 0
+$$
+where $\phi$ is the exercise payoff and $\mathcal{L}$ is the Black-Scholes
+operator. We solve this via a penalty-projection fixed-point iteration
+[@forsyth2002].
+
+### 2D product options (equity + FX)
+
+For an option on a foreign equity quoted in domestic currency, the value
+$V(S, X, t)$ depends on both the equity price $S$ and the FX rate $X$.
+Under the domestic measure with equity dividend yield $q$:
+
+$$
+V_t + \tfrac{1}{2}(\sigma_S S)^2 V_{SS} + \tfrac{1}{2}(\sigma_X X)^2 V_{XX}
++ \rho\,\sigma_S\,\sigma_X\,SX\,V_{SX}
++ \mu_S S V_S + (r_d - r_f) X V_X - r_d V = 0
+$$
+
+where $\mu_S = r_f - q - \rho\,\sigma_S\,\sigma_X$ is the quanto-adjusted
+equity drift. Terminal condition: $V(S, X, T) = \max(\pm(SX - K), 0)$.
+
+The 2D PDE is solved via Yanenko operator splitting: at each time step, we
+solve implicitly in $S$ (Pass 1) and then implicitly in $X$ (Pass 2). The
+mixed derivative $V_{SX}$ is treated explicitly using a centered cross-stencil.
+
+### Heston stochastic volatility
+
+The Heston model [@heston1993] replaces local volatility with a CIR variance
+process:
+
+$$
+\begin{aligned}
+dS &= (r_d - q)S\,dt + \sqrt{v}\,S\,dW_S \\
+dv &= \kappa(\theta - v)\,dt + \xi\sqrt{v}\,dW_v
+\end{aligned}
+$$
+
+with $\text{Corr}(dW_S, dW_v) = \rho$ and Feller condition
+$2\kappa\theta > \xi^2$. The PDE for $V(S, v, t)$ is:
+
+$$
+V_t + \tfrac{1}{2}vS^2 V_{SS} + \rho\xi vS V_{Sv}
++ \tfrac{1}{2}\xi^2 v V_{vv} + (r_d - q)S V_S
++ \kappa(\theta - v)V_v - r_d V = 0
+$$
+
+The package provides three Heston solvers:
+
+1. **Closed-form** (`heston_cf`): Evaluates the Heston characteristic function
+   using the numerically stable "little Heston trap" formulation
+   [@albrecher2007] with Simpson's rule integration.
+2. **European PDE** (`european_option_heston`): 2D finite differences on
+   $(S, v)$ with Yanenko splitting and Tavella-Randall grids.
+3. **American PDE** (`american_option_heston`): Same solver with split penalty
+   projection for early exercise.
+
+### 4D Monte Carlo (double-Heston quanto)
+
+For products where both the equity and FX rate exhibit stochastic volatility,
+the state space is $(S, X, v_S, v_X)$---four dimensions that make PDE
+approaches impractical. We simulate the system using Euler-Maruyama with full
+truncation:
+
+$$
+\begin{aligned}
+d\log S &= (r_f - q - \rho_{SX}\sqrt{v_S}\sqrt{v_X} - \tfrac{1}{2}v_S)\,dt
+  + \sqrt{v_S}\,dW_S \\
+d\log X &= (r_d - r_f - \tfrac{1}{2}v_X)\,dt + \sqrt{v_X}\,dW_X \\
+dv_S &= \kappa_S(\theta_S - v_S^+)\,dt + \xi_S\sqrt{v_S^+}\,dW_{v_S} \\
+dv_X &= \kappa_X(\theta_X - v_X^+)\,dt + \xi_X\sqrt{v_X^+}\,dW_{v_X}
+\end{aligned}
+$$
+
+The four Brownian motions are correlated via a $4 \times 4$ correlation matrix
+decomposed using Cholesky factorisation. Variance reduction is achieved through
+antithetic variates. American exercise is handled via Longstaff-Schwartz
+least-squares regression [@longstaff2001] on polynomial basis functions of the
+product $P = SX$.
+
+## Numerical methods
+
+### Tavella-Randall grids
+
+All PDE solvers use nonuniform grids generated by the Tavella-Randall
+[@tavella2000] method, which concentrates nodes near the spot price where
+accuracy matters most:
+
+```{r tavella-randall, fig.cap="Tavella-Randall grid with nodes concentrated near S = 100."}
+grid <- tavella_randall(x_0 = 100, alpha = 3, x_min = 1, x_max = 400, n_grid = 50)
+plot(grid, rep(0, length(grid)), pch = "|", cex = 1.5,
+     xlab = "S", ylab = "", yaxt = "n",
+     main = "Tavella-Randall grid (alpha = 3, centered at S = 100)")
+abline(v = 100, lty = 2, col = "red")
+```
+
+The parameter `alpha` controls the degree of clustering: smaller values
+produce stronger concentration near `x_0`.
+
+### Thomas algorithm
+
+All tridiagonal systems arising from the Crank-Nicolson and Yanenko
+discretisations are solved using the Thomas algorithm. The batch European
+solver pre-factors the LHS once per time step (since it depends only on the
+volatility surface and grid, not the strike), then solves each option's RHS
+via $O(N)$ forward/back substitution.
+
+## Illustrations
+
+### 1D European option (local volatility)
+
+```{r european-1d}
+s_0 <- 100; k <- 100; tau <- 1
+r_d <- 0.05; r_f <- 0.02
+n_s <- 100; n_t <- 100
+Sigma <- matrix(0.2, nrow = n_s + 1, ncol = n_t + 1)
+
+price_call <- european_option_lv(s_0, k, tau, r_d, r_f, Sigma, "call",
+                                  s_min = 1, s_max = 400, n_s, n_t)
+price_put  <- european_option_lv(s_0, k, tau, r_d, r_f, Sigma, "put",
+                                  s_min = 1, s_max = 400, n_s, n_t)
+
+# Verify put-call parity: C - P = S exp(-r_f tau) - K exp(-r_d tau)
+parity_lhs <- price_call - price_put
+parity_rhs <- s_0 * exp(-r_f * tau) - k * exp(-r_d * tau)
+c(call = price_call, put = price_put,
+  parity_error = abs(parity_lhs - parity_rhs))
+```
+
+### 1D American option (penalty method)
+
+```{r american-1d}
+price_am <- american_option_lv(s_0, k, tau, r_d, r_f, Sigma, "put",
+                                s_min = 1, s_max = 400, n_s, n_t,
+                                lambda = 1e4, tolerance = 1e-8)
+c(european_put = price_put, american_put = price_am,
+  early_exercise_premium = price_am - price_put)
+```
+
+The early exercise premium is positive, as expected for American puts.
+
+### Grid convergence
+
+We verify that the 1D European solver converges to the Black-Scholes
+closed-form price as the grid is refined:
+
+```{r convergence, fig.cap="Grid convergence of the 1D European solver."}
+bs_call <- function(s, k, tau, r, q, sigma) {
+  d1 <- (log(s / k) + (r - q + 0.5 * sigma^2) * tau) / (sigma * sqrt(tau))
+  d2 <- d1 - sigma * sqrt(tau)
+  s * exp(-q * tau) * pnorm(d1) - k * exp(-r * tau) * pnorm(d2)
+}
+
+bs_ref <- bs_call(100, 100, 1, 0.05, 0.02, 0.2)
+
+grids <- c(25, 50, 100, 200)
+errors <- sapply(grids, function(n) {
+  Sig <- matrix(0.2, nrow = n + 1, ncol = n + 1)
+  p <- european_option_lv(100, 100, 1, 0.05, 0.02, Sig, "call", 1, 400, n, n)
+  abs(p - bs_ref)
+})
+
+plot(grids, errors, log = "xy", type = "b", pch = 19,
+     xlab = "Grid points (n_s = n_t)", ylab = "Absolute error",
+     main = "Convergence to Black-Scholes")
+```
+
+### 2D product option (equity + FX)
+
+```{r european-2d}
+price_2d <- european_option_2d(
+  s_0 = 100, x_0 = 20, k = 2000, tau = 1,
+  r_d = 0.05, r_f = 0.02, q = 0.01,
+  sigma_s = 0.2, sigma_x = 0.15, rho = 0.3, type = "call",
+  s_min = 10, s_max = 300, x_min = 1, x_max = 60,
+  n_s = 30, n_x = 30, n_t = 40, alpha = 3)
+
+# Compare with closed-form ADR pricer
+price_cf <- european_option_cf_2d(100, 20, 2000, 1, 0.05, 0.02, 0.01,
+                                   0.2, 0.15, 0.3, "call", 1)
+
+c(pde = price_2d, closed_form = price_cf,
+  relative_error = abs(price_2d - price_cf) / price_cf)
+```
+
+### Heston stochastic volatility
+
+```{r heston}
+kappa <- 2; theta <- 0.04; xi <- 0.5; rho_h <- -0.7; v_0 <- 0.04
+
+# Closed-form
+price_cf <- heston_cf(100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0,
+                       "call")
+
+# PDE solver
+price_pde <- european_option_heston(
+  100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0, "call",
+  s_min = 20, s_max = 300, v_min = 0.001, v_max = 1.0,
+  n_s = 60, n_v = 30, n_t = 80, alpha = 3)
+
+# American put
+price_am <- suppressWarnings(american_option_heston(
+  100, 100, 1, 0.05, 0, kappa, theta, xi, rho_h, v_0, "put",
+  s_min = 20, s_max = 300, v_min = 0.001, v_max = 1.0,
+  n_s = 60, n_v = 30, n_t = 80, alpha = 3,
+  lambda = 1e4, tolerance = 1e-8))
+
+c(cf = price_cf, pde = price_pde,
+  pde_vs_cf_error = abs(price_pde - price_cf) / price_cf,
+  american_put = price_am)
+```
+
+### 4D Monte Carlo
+
+```{r mc-4d}
+set.seed(42)
+mc_eu <- suppressWarnings(mc_european_heston_4d(
+  s_0 = 100, x_0 = 20, k = 2000, tau = 1,
+  r_d = 0.05, r_f = 0.02, q = 0.01,
+  kappa_s = 2, theta_s = 0.04, xi_s = 0.5, v_s0 = 0.04,
+  kappa_x = 1.5, theta_x = 0.02, xi_x = 0.3, v_x0 = 0.02,
+  rho_sx = 0.3, rho_sv = -0.7, rho_xv = -0.5,
+  rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,
+  type = "call", n_paths = 50000, n_steps = 50, seed = 42))
+
+c(price = mc_eu$price, std_error = mc_eu$std_error)
+```
+
+### Batch pricing for calibration
+
+```{r batch}
+strikes <- c(80, 90, 100, 110, 120)
+n_opt   <- length(strikes)
+Sigma   <- matrix(0.2, nrow = 101, ncol = 101)
+
+prices_eu <- batch_price_european_lv(
+  spots   = rep(100, n_opt),
+  strikes = strikes,
+  taus    = rep(1.0, n_opt),
+  r_ds    = rep(0.05, n_opt),
+  r_fs    = rep(0.02, n_opt),
+  sigma   = Sigma,
+  types   = rep("call", n_opt),
+  s_min = 1, s_max = 400, n_s = 100, n_t = 100)
+
+data.frame(strike = strikes, price = round(prices_eu, 4))
+```
+
+## Software design
+
+The package is structured around a small number of design principles:
+
+1. **Zero R heap allocation in hot paths.** All PDE solvers and Monte Carlo
+   engines operate on raw `double*` arrays inside the C++ layer. Rcpp types
+   are used only at the interface boundary.
+
+2. **Shared infrastructure.** The Tavella-Randall grid generator, Thomas
+   algorithm, and bilinear interpolation are reused across all solvers. The 2D
+   Yanenko splitting template is shared between constant-vol, local-vol, and
+   Heston solvers.
+
+3. **Thread safety by construction.** Parallel regions (batch American solver,
+   Monte Carlo) copy all Rcpp objects to STL containers before spawning
+   threads. Each thread owns its RNG instance and workspace.
+
+4. **Calibration-friendly.** The batch European solver factors the tridiagonal
+   LHS once per time step and reuses it across all options---reducing the
+   marginal cost per option from $O(2N)$ to $O(N)$.
+
+## Summary
+
+The **LocalVolatility** package provides a comprehensive, self-contained suite
+of option pricing engines spanning local volatility, stochastic volatility, and
+their combination in 4D Monte Carlo. All solvers are implemented in C++ for
+performance, with careful attention to numerical stability (Tavella-Randall
+grids, the "little Heston trap", full truncation Euler-Maruyama) and
+thread-parallel execution where applicable.
+
+The package is available from GitHub at
+<https://github.com/alejandro-olguin/LocalVolatility>.
+
+## References

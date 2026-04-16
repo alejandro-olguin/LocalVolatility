@@ -130,42 +130,48 @@ double isinh(double x) {
 //' which applies a combination of hyperbolic sine transformations to create a smooth sequence
 //' between a specified minimum and maximum value.
 //'
-//' @param x0 Numeric. The central value around which the sequence is generated.
+//' @param x_0 Numeric. The central value around which the sequence is generated.
 //' @param alpha Numeric. A scaling parameter that controls the shape of the sequence.
 //' @param x_min Numeric. The minimum value of the sequence.
 //' @param x_max Numeric. The maximum value of the sequence.
-//' @param n Integer. The number of values in the generated sequence.
+//' @param n_grid Integer. The number of intervals in the generated sequence
+//'   (\code{n_grid + 1} nodes).
 //'
-//' @return A numeric vector of length `n` containing the generated sequence.
+//' @return A numeric vector of length \code{n_grid + 1} containing the generated sequence.
 //'
-//' @details The function calculates the sequence by dividing the interval `[0, 1]` into `n`
+//' @details The function divides the interval \code{[0, 1]} into \code{n_grid}
 //' equally spaced points. At each point, it computes the corresponding value based on the
 //' Tavella and Randall method, which uses the hyperbolic sine function to ensure a smooth
-//' transition between `x_min` and `x_max`.
+//' transition between \code{x_min} and \code{x_max}.
+//'
+//' @examples
+//' grid <- tavella_randall(100, 3, 1, 400, 50)
+//' plot(grid, rep(0, length(grid)), pch = "|",
+//'      xlab = "S", ylab = "", main = "Tavella-Randall grid")
 //'
 //' @export
 // [[Rcpp::export]]
-NumericVector tavella_randall(double x0,
+NumericVector tavella_randall(double x_0,
                               double alpha,
                               double x_min,
                               double x_max,
-                              int n) {
-  if (n < 1) stop("tavella_randall: n must be >= 1");
+                              int n_grid) {
+  if (n_grid < 1) stop("tavella_randall: n_grid must be >= 1");
   if (x_max <= x_min) stop("tavella_randall: x_max must be > x_min");
   if (alpha <= 0.0) stop("tavella_randall: alpha must be > 0");
 
-  const double c1 = isinh((x_min - x0) / alpha);
-  const double c2 = isinh((x_max - x0) / alpha);
+  const double c1 = isinh((x_min - x_0) / alpha);
+  const double c2 = isinh((x_max - x_0) / alpha);
 
-  // IMPORTANT: n+1 points (0..n)
-  Rcpp::NumericVector result(n + 1);
-  for (int j = 0; j <= n; ++j) {
-    const double t = static_cast<double>(j) / n;   // 0..1 inclusive
-    result[j] = x0 + alpha * std::sinh(c2 * t + c1 * (1.0 - t));
+  // IMPORTANT: n_grid+1 points (0..n_grid)
+  Rcpp::NumericVector result(n_grid + 1);
+  for (int j = 0; j <= n_grid; ++j) {
+    const double t = static_cast<double>(j) / n_grid;   // 0..1 inclusive
+    result[j] = x_0 + alpha * std::sinh(c2 * t + c1 * (1.0 - t));
   }
 
   // Make endpoints exact (avoid tiny round-off drift)
-  result[0]  = x_min;
-  result[n]  = x_max;
+  result[0]      = x_min;
+  result[n_grid] = x_max;
   return result;
 }
