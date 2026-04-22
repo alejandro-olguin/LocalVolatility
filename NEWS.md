@@ -1,5 +1,30 @@
 # LocalVolatility NEWS
 
+## 3.2.0 (2026-04-14)
+
+### Documentation
+
+- **Vignette** (`vignettes/local-volatility.Rmd`): Added a comprehensive
+  JSS-standard vignette with the mathematical framework, software design
+  overview, and fully reproducible examples for all solver families.
+- **Package-level help page** (`R/LocalVolatility-package.R`): Added a
+  structured function index with sections for 1D, 2D, Heston, and Monte Carlo
+  solvers, plus full reference list.
+- **`inst/CITATION`**: Added formal bibentry so users can cite the package.
+- **Runnable examples**: Added `@examples` blocks to all 15 exported functions.
+
+### Robustness
+
+- **2 GB memory guard** in `mc_american_heston_4d()`: Added a pre-allocation
+  check that stops with a clear error if `n_paths * n_steps` would exceed 2 GB,
+  preventing silent out-of-memory crashes.
+
+### Code quality
+
+- Removed an unused variable warning from the MC American solver.
+- Removed `.DS_Store` files and R CMD check build artifacts from tracking
+  (added patterns to `.Rbuildignore` and `.gitignore`).
+
 ## 3.1.0 (2026-04-06)
 
 ### New features
