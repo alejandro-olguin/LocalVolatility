@@ -29,7 +29,8 @@ mc_european_heston_4d(
   type,
   n_paths,
   n_steps,
-  seed
+  seed,
+  n_threads = 0L
 )
 }
 \arguments{
@@ -82,6 +83,10 @@ mc_european_heston_4d(
 \item{n_steps}{Number of time steps per path (e.g. 100).}
 
 \item{seed}{RNG seed for reproducibility.}
+
+\item{n_threads}{Number of threads to use (0 = auto-detect via
+\code{std::thread::hardware_concurrency()}; default 0). Set to 1 for
+fully reproducible results across machines.}
 }
 \value{
 A list with components \code{price} (option price) and

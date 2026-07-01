@@ -19,3 +19,6 @@ vignettes/*.html
 *.Rcheck/
 *.tar.gz
 .claude/
+LocalVolatility-manual.pdf
+vignettes/*.R
+.Rd2pdf*

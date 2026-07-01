@@ -297,7 +297,7 @@ Rcpp::NumericVector batch_price_european_lv(
 
 // ============================================================================
 // Batch American solver: prices multiple American options sharing one sigma
-// surface, parallelized across options via OpenMP.
+// surface, parallelized across options via std::thread.
 // ============================================================================
 
 //' Batch-price American options under local volatility (1D)
@@ -319,6 +319,8 @@ Rcpp::NumericVector batch_price_european_lv(
 //' @param n_t Number of time steps.
 //' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 //' @param tolerance Convergence tolerance for penalty iterations.
+//' @param n_threads Number of threads for parallel option solves
+//'   (0 = auto-detect; default 0).
 //'
 //' @return Numeric vector of option prices (same length as \code{strikes}).
 //'
@@ -326,7 +328,9 @@ Rcpp::NumericVector batch_price_european_lv(
 //' Each option is solved independently using the same sigma surface and grid.
 //' The solver uses Crank-Nicolson with a penalty-projection fixed-point
 //' iteration for the American constraint, capped at 200 iterations per time
-//' step. Options are solved in parallel across CPU cores using std::thread.
+//' step. Options are solved in parallel across CPU cores using \code{std::thread}.
+//' For tidy-data workflows, bind the returned price vector to contract metadata
+//' so each row corresponds to one option and each column to one variable.
 //'
 //' @examples
 //' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
@@ -339,7 +343,8 @@ Rcpp::NumericVector batch_price_european_lv(
 //'   sigma   = Sigma,
 //'   types   = rep("put", 3),
 //'   s_min = 1, s_max = 400, n_s = 50, n_t = 50,
-//'   lambda = 1e4, tolerance = 1e-8)
+//'   lambda = 1e4, tolerance = 1e-8,
+//'   n_threads = 0)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -353,7 +358,7 @@ Rcpp::NumericVector batch_price_american_lv(
     const Rcpp::StringVector& types,
     double s_min, double s_max,
     int n_s, int n_t,
-    double lambda, double tolerance) {
+    double lambda, double tolerance, int n_threads = 0) {
 
   const int n_opt = strikes.size();
 
@@ -365,6 +370,7 @@ Rcpp::NumericVector batch_price_american_lv(
   if (s_max <= s_min) Rcpp::stop("s_max must be > s_min.");
   if (lambda <= 0.0) Rcpp::stop("lambda must be > 0.");
   if (tolerance <= 0.0) Rcpp::stop("tolerance must be > 0.");
+  if (n_threads < 0) Rcpp::stop("n_threads must be >= 0.");
   if (sigma.nrow() != n_s + 1 || sigma.ncol() != n_t + 1)
     Rcpp::stop("sigma must have dimensions (n_s+1) x (n_t+1).");
 
@@ -544,20 +550,22 @@ Rcpp::NumericVector batch_price_american_lv(
   };
 
   // Distribute options across threads
-  unsigned int n_threads = std::thread::hardware_concurrency();
-  if (n_threads == 0) n_threads = 1;
-  if (static_cast<int>(n_threads) > n_opt) n_threads = n_opt;
+  unsigned int n_thr = (n_threads > 0)
+    ? static_cast<unsigned int>(n_threads)
+    : std::thread::hardware_concurrency();
+  if (n_thr == 0) n_thr = 1;
+  if (static_cast<int>(n_thr) > n_opt) n_thr = n_opt;
 
-  if (n_threads <= 1) {
+  if (n_thr <= 1) {
     // Single-threaded path
     solve_range(0, n_opt);
   } else {
     std::vector<std::thread> threads;
-    threads.reserve(n_threads);
-    int chunk = n_opt / n_threads;
-    int remainder = n_opt % n_threads;
+    threads.reserve(n_thr);
+    int chunk = n_opt / n_thr;
+    int remainder = n_opt % n_thr;
     int start = 0;
-    for (unsigned int t = 0; t < n_threads; ++t) {
+    for (unsigned int t = 0; t < n_thr; ++t) {
       int end = start + chunk + (static_cast<int>(t) < remainder ? 1 : 0);
       threads.emplace_back(solve_range, start, end);
       start = end;

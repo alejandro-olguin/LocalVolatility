@@ -61,6 +61,15 @@ Longstaff-Schwartz least-squares regression.}
 }
 }
 
+\section{Data conventions (tidy-data friendly)}{
+
+All vectorised interfaces return values in the same order as input contracts.
+For calibration or reporting, build a rectangular table where each row is one
+contract and each column is a variable (for example, strike, tau, type,
+model_price). Scalar or list outputs can be converted to one-row tables with
+explicit column names (for example, price and std_error).
+}
+
 \references{
 Heston, S. L. (1993). A closed-form solution for options with stochastic
 volatility with applications to bond and currency options.

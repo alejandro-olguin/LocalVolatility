@@ -266,8 +266,8 @@ RcppExport SEXP _LocalVolatility_batch_price_european_lv(SEXP spotsSEXP, SEXP st
     return rcpp_result_gen;
 }
 // batch_price_american_lv
-Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance);
-static SEXP _LocalVolatility_batch_price_american_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+Rcpp::NumericVector batch_price_american_lv(const Rcpp::NumericVector& spots, const Rcpp::NumericVector& strikes, const Rcpp::NumericVector& taus, const Rcpp::NumericVector& r_ds, const Rcpp::NumericVector& r_fs, const Rcpp::NumericMatrix& sigma, const Rcpp::StringVector& types, double s_min, double s_max, int n_s, int n_t, double lambda, double tolerance, int n_threads);
+static SEXP _LocalVolatility_batch_price_american_lv_try(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP, SEXP n_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type spots(spotsSEXP);
@@ -283,15 +283,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_t(n_tSEXP);
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(batch_price_american_lv(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance));
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(batch_price_american_lv(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_batch_price_american_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP) {
+RcppExport SEXP _LocalVolatility_batch_price_american_lv(SEXP spotsSEXP, SEXP strikesSEXP, SEXP tausSEXP, SEXP r_dsSEXP, SEXP r_fsSEXP, SEXP sigmaSEXP, SEXP typesSEXP, SEXP s_minSEXP, SEXP s_maxSEXP, SEXP n_sSEXP, SEXP n_tSEXP, SEXP lambdaSEXP, SEXP toleranceSEXP, SEXP n_threadsSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_american_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, r_fsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_batch_price_american_lv_try(spotsSEXP, strikesSEXP, tausSEXP, r_dsSEXP, r_fsSEXP, sigmaSEXP, typesSEXP, s_minSEXP, s_maxSEXP, n_sSEXP, n_tSEXP, lambdaSEXP, toleranceSEXP, n_threadsSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -767,7 +768,7 @@ static int _LocalVolatility_RcppExport_validate(const char* sig) {
         signatures.insert("double(*american_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int,double,double)");
         signatures.insert("double(*american_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double,double,double)");
         signatures.insert("Rcpp::NumericVector(*batch_price_european_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int)");
-        signatures.insert("Rcpp::NumericVector(*batch_price_american_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int,double,double)");
+        signatures.insert("Rcpp::NumericVector(*batch_price_american_lv)(const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericVector&,const Rcpp::NumericMatrix&,const Rcpp::StringVector&,double,double,int,int,double,double,int)");
         signatures.insert("double(*european_option_2d)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
         signatures.insert("double(*european_option_cf_2d)(double,double,double,double,double,double,double,double,double,double,String,int)");
         signatures.insert("double(*european_option_heston)(double,double,double,double,double,double,double,double,double,double,String,double,double,double,double,int,int,int,double)");
@@ -808,7 +809,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LocalVolatility_american_option_lv", (DL_FUNC) &_LocalVolatility_american_option_lv, 13},
     {"_LocalVolatility_american_option_lv_2d", (DL_FUNC) &_LocalVolatility_american_option_lv_2d, 21},
     {"_LocalVolatility_batch_price_european_lv", (DL_FUNC) &_LocalVolatility_batch_price_european_lv, 11},
-    {"_LocalVolatility_batch_price_american_lv", (DL_FUNC) &_LocalVolatility_batch_price_american_lv, 13},
+    {"_LocalVolatility_batch_price_american_lv", (DL_FUNC) &_LocalVolatility_batch_price_american_lv, 14},
     {"_LocalVolatility_european_option_2d", (DL_FUNC) &_LocalVolatility_european_option_2d, 19},
     {"_LocalVolatility_european_option_cf_2d", (DL_FUNC) &_LocalVolatility_european_option_cf_2d, 12},
     {"_LocalVolatility_european_option_heston", (DL_FUNC) &_LocalVolatility_european_option_heston, 19},

@@ -30,7 +30,8 @@ mc_american_heston_4d(
   n_paths,
   n_steps,
   seed,
-  n_basis = 4L
+  n_basis = 4L,
+  n_threads = 0L
 )
 }
 \arguments{
@@ -84,12 +85,18 @@ mc_american_heston_4d(
 
 \item{seed}{RNG seed for reproducibility.}
 
-\item{n_basis}{Number of polynomial basis functions for LSM regression
-(default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).}
+\item{n_basis}{Number of polynomial basis functions in \code{P/K} for LSM
+regression (default 4). The full basis is
+\code{1, P/K, ..., (P/K)^(n_basis-1), v_S/theta_S, v_X/theta_X}.}
+
+\item{n_threads}{Number of threads for forward simulation (0 = auto-detect;
+default 0). Set to 1 for fully reproducible results across machines.}
 }
 \value{
 A list with components \code{price} (option price) and
-\code{std_error} (Monte Carlo standard error estimate).
+\code{std_error} (Monte Carlo standard error estimate). For tidy-data
+workflows, convert this to a one-row data frame/tibble with explicit
+columns such as model, exercise, price, and std_error.
 }
 \description{
 Prices an American option on a foreign equity quoted in domestic currency
@@ -103,7 +110,9 @@ to \code{\link{mc_european_heston_4d}}. The product \eqn{P_t = S_t X_t} is
 stored at each exercise date.
 
 The backward Longstaff-Schwartz pass regresses continuation values on
-polynomial basis functions of P at each exercise date. The regression
+polynomial basis functions of P and the current variance levels v_S, v_X
+at each exercise date. The basis is \code{1, P/K, ..., (P/K)^(n_basis-1),
+v_S/theta_S, v_X/theta_X} (n_basis+2 regressors total). The regression
 determines the optimal exercise boundary. Only in-the-money paths are
 used in the regression.
 }

@@ -245,6 +245,8 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #' @param n_t Number of time steps.
 #' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 #' @param tolerance Convergence tolerance for penalty iterations.
+#' @param n_threads Number of threads for parallel option solves
+#'   (0 = auto-detect; default 0).
 #'
 #' @return Numeric vector of option prices (same length as \code{strikes}).
 #'
@@ -252,7 +254,9 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #' Each option is solved independently using the same sigma surface and grid.
 #' The solver uses Crank-Nicolson with a penalty-projection fixed-point
 #' iteration for the American constraint, capped at 200 iterations per time
-#' step. Options are solved in parallel across CPU cores using std::thread.
+#' step. Options are solved in parallel across CPU cores using \code{std::thread}.
+#' For tidy-data workflows, bind the returned price vector to contract metadata
+#' so each row corresponds to one option and each column to one variable.
 #'
 #' @examples
 #' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
@@ -265,11 +269,12 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #'   sigma   = Sigma,
 #'   types   = rep("put", 3),
 #'   s_min = 1, s_max = 400, n_s = 50, n_t = 50,
-#'   lambda = 1e4, tolerance = 1e-8)
+#'   lambda = 1e4, tolerance = 1e-8,
+#'   n_threads = 0)
 #'
 #' @export
-batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance) {
-    .Call(`_LocalVolatility_batch_price_american_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance)
+batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads = 0L) {
+    .Call(`_LocalVolatility_batch_price_american_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads)
 }
 
 #' European Option 2D (constant volatility)
@@ -549,13 +554,16 @@ heston_cf <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type) {
 #' @param n_paths Number of Monte Carlo paths (e.g. 1e5).
 #' @param n_steps Number of exercise dates / time steps (e.g. 50).
 #' @param seed RNG seed for reproducibility.
-#' @param n_basis Number of polynomial basis functions for LSM regression
-#'   (default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).
+#' @param n_basis Number of polynomial basis functions in \code{P/K} for LSM
+#'   regression (default 4). The full basis is
+#'   \code{1, P/K, ..., (P/K)^(n_basis-1), v_S/theta_S, v_X/theta_X}.
 #' @param n_threads Number of threads for forward simulation (0 = auto-detect;
 #'   default 0). Set to 1 for fully reproducible results across machines.
 #'
 #' @return A list with components \code{price} (option price) and
-#'   \code{std_error} (Monte Carlo standard error estimate).
+#'   \code{std_error} (Monte Carlo standard error estimate). For tidy-data
+#'   workflows, convert this to a one-row data frame/tibble with explicit
+#'   columns such as model, exercise, price, and std_error.
 #'
 #' @details
 #' The forward simulation uses Euler-Maruyama with full truncation, identical

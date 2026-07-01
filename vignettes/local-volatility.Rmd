@@ -155,8 +155,9 @@ $$
 The four Brownian motions are correlated via a $4 \times 4$ correlation matrix
 decomposed using Cholesky factorisation. Variance reduction is achieved through
 antithetic variates. American exercise is handled via Longstaff-Schwartz
-least-squares regression [@longstaff2001] on polynomial basis functions of the
-product $P = SX$.
+least-squares regression [@longstaff2001] on a basis that includes polynomial
+terms in $P/K$ and normalized variance-state regressors
+$(v_S/\theta_S,\;v_X/\theta_X)$.
 
 ## Numerical methods
 
@@ -301,9 +302,22 @@ mc_eu <- suppressWarnings(mc_european_heston_4d(
   kappa_x = 1.5, theta_x = 0.02, xi_x = 0.3, v_x0 = 0.02,
   rho_sx = 0.3, rho_sv = -0.7, rho_xv = -0.5,
   rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,
-  type = "call", n_paths = 50000, n_steps = 50, seed = 42))
+  type = "call", n_paths = 50000, n_steps = 50, seed = 42,
+  n_threads = 0))
 
 c(price = mc_eu$price, std_error = mc_eu$std_error)
+
+mc_am <- suppressWarnings(mc_american_heston_4d(
+  s_0 = 100, x_0 = 20, k = 2000, tau = 1,
+  r_d = 0.05, r_f = 0.02, q = 0.01,
+  kappa_s = 2, theta_s = 0.04, xi_s = 0.5, v_s0 = 0.04,
+  kappa_x = 1.5, theta_x = 0.02, xi_x = 0.3, v_x0 = 0.02,
+  rho_sx = 0.3, rho_sv = -0.7, rho_xv = -0.5,
+  rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,
+  type = "put", n_paths = 30000, n_steps = 40, seed = 42,
+  n_basis = 4, n_threads = 0))
+
+c(price = mc_am$price, std_error = mc_am$std_error)
 ```
 
 ### Batch pricing for calibration
@@ -324,6 +338,50 @@ prices_eu <- batch_price_european_lv(
   s_min = 1, s_max = 400, n_s = 100, n_t = 100)
 
 data.frame(strike = strikes, price = round(prices_eu, 4))
+
+prices_am <- batch_price_american_lv(
+  spots   = rep(100, n_opt),
+  strikes = strikes,
+  taus    = rep(1.0, n_opt),
+  r_ds    = rep(0.05, n_opt),
+  r_fs    = rep(0.02, n_opt),
+  sigma   = Sigma,
+  types   = rep("put", n_opt),
+  s_min = 1, s_max = 400, n_s = 100, n_t = 100,
+  lambda = 1e4, tolerance = 1e-8, n_threads = 0)
+
+data.frame(strike = strikes, am_price = round(prices_am, 4))
+```
+
+## Tidy-data output standard
+
+For analysis and reporting, follow Wickham's tidy-data standard: one row per
+contract and one column per variable.
+
+```{r tidy-data-contract-table}
+contracts <- data.frame(
+  spot = rep(100, n_opt),
+  strike = strikes,
+  tau = rep(1.0, n_opt),
+  r_d = rep(0.05, n_opt),
+  r_f = rep(0.02, n_opt),
+  type = rep("call", n_opt)
+)
+contracts$model_price <- prices_eu
+head(contracts)
+```
+
+Monte Carlo outputs return a named list. Convert it to a one-row rectangular
+record before combining with other model runs.
+
+```{r tidy-data-mc-table}
+mc_tbl <- data.frame(
+  model = "double_heston_mc",
+  exercise = "european",
+  price = mc_eu$price,
+  std_error = mc_eu$std_error
+)
+mc_tbl
 ```
 
 ## Software design

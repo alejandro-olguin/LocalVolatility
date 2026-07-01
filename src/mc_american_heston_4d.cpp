@@ -137,13 +137,16 @@ void solve_normal_equations(const std::vector<double>& X, // n*p column-major
 //' @param n_paths Number of Monte Carlo paths (e.g. 1e5).
 //' @param n_steps Number of exercise dates / time steps (e.g. 50).
 //' @param seed RNG seed for reproducibility.
-//' @param n_basis Number of polynomial basis functions for LSM regression
-//'   (default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).
+//' @param n_basis Number of polynomial basis functions in \code{P/K} for LSM
+//'   regression (default 4). The full basis is
+//'   \code{1, P/K, ..., (P/K)^(n_basis-1), v_S/theta_S, v_X/theta_X}.
 //' @param n_threads Number of threads for forward simulation (0 = auto-detect;
 //'   default 0). Set to 1 for fully reproducible results across machines.
 //'
 //' @return A list with components \code{price} (option price) and
-//'   \code{std_error} (Monte Carlo standard error estimate).
+//'   \code{std_error} (Monte Carlo standard error estimate). For tidy-data
+//'   workflows, convert this to a one-row data frame/tibble with explicit
+//'   columns such as model, exercise, price, and std_error.
 //'
 //' @details
 //' The forward simulation uses Euler-Maruyama with full truncation, identical
@@ -223,6 +226,13 @@ Rcpp::List mc_american_heston_4d(
 
   const double dt = tau / n_steps;
   const double sqrt_dt = std::sqrt(dt);
+  const double inv_k = 1.0 / k;
+  const double inv_theta_s = 1.0 / theta_s;
+  const double inv_theta_x = 1.0 / theta_x;
+
+  std::vector<double> disc_steps(n_steps + 1);
+  for (int h = 0; h <= n_steps; ++h)
+    disc_steps[h] = std::exp(-r_d * h * dt);
 
 
   // ======================================================================= //
@@ -318,14 +328,22 @@ Rcpp::List mc_american_heston_4d(
     cashflow[p] = is_call ? std::max(Pt - k, 0.0) : std::max(k - Pt, 0.0);
   }
 
+  const int n_reg = n_basis + 2;
+  std::vector<int> itm_indices;
+  itm_indices.reserve(n_paths / 2);
+  std::vector<double> Xmat;
+  std::vector<double> Y;
+  std::vector<double> beta;
+
   // Backward from n_steps-1 to 1 (step 0 is t=0, no exercise there)
   for (int step = n_steps - 1; step >= 1; --step) {
+    const size_t step_offset = static_cast<size_t>(step) * n_paths;
+
     // Find ITM paths at this step
-    std::vector<int> itm_indices;
-    itm_indices.reserve(n_paths / 2);
+    itm_indices.clear();
 
     for (int p = 0; p < n_paths; ++p) {
-      double Pt = P_paths[p + static_cast<size_t>(step) * n_paths];
+      double Pt = P_paths[p + step_offset];
       double exercise_val = is_call ? std::max(Pt - k, 0.0) : std::max(k - Pt, 0.0);
       if (exercise_val > 0.0) itm_indices.push_back(p);
     }
@@ -333,38 +351,36 @@ Rcpp::List mc_american_heston_4d(
     if (itm_indices.empty()) continue;
 
     int n_itm = static_cast<int>(itm_indices.size());
-    // Total regressors: n_basis polynomial terms in P/K + vs/theta_s + vx/theta_x
-    const int n_reg = n_basis + 2;
 
     // Build design matrix X (n_itm x n_reg) and response Y
-    std::vector<double> Xmat(n_itm * n_reg, 0.0); // column-major
-    std::vector<double> Y(n_itm, 0.0);
+    Xmat.resize(static_cast<size_t>(n_itm) * n_reg, 0.0); // column-major
+    Y.resize(n_itm);
 
     for (int i = 0; i < n_itm; ++i) {
       int p = itm_indices[i];
-      size_t col_offset = static_cast<size_t>(step) * n_paths;
-      double Pt  = P_paths [p + col_offset];
-      double vst = std::max(vs_paths[p + col_offset], 0.0);
-      double vxt = std::max(vx_paths[p + col_offset], 0.0);
+      double Pt  = P_paths [p + step_offset];
+      double vst = std::max(vs_paths[p + step_offset], 0.0);
+      double vxt = std::max(vx_paths[p + step_offset], 0.0);
+      double p_over_k = Pt * inv_k;
 
       // Polynomial basis: 1, P/K, (P/K)^2, ...
       double basis = 1.0;
       for (int b = 0; b < n_basis; ++b) {
         Xmat[i + b * n_itm] = basis;
-        basis *= Pt / k;
+        basis *= p_over_k;
       }
       // Variance regressors: normalized by long-run mean for scale
-      Xmat[i + n_basis       * n_itm] = vst / theta_s;
-      Xmat[i + (n_basis + 1) * n_itm] = vxt / theta_x;
+      Xmat[i + n_basis       * n_itm] = vst * inv_theta_s;
+      Xmat[i + (n_basis + 1) * n_itm] = vxt * inv_theta_x;
 
       // Continuation value: discounted future cashflow from this path
       int steps_fwd = exercise_time[p] - step;
-      double disc_fwd = std::exp(-r_d * steps_fwd * dt);
+      double disc_fwd = disc_steps[steps_fwd];
       Y[i] = cashflow[p] * disc_fwd;
     }
 
     // Solve regression
-    std::vector<double> beta;
+    beta.clear();
     if (n_itm >= n_reg) {
       solve_normal_equations(Xmat, Y, n_itm, n_reg, beta);
     } else {
@@ -374,10 +390,10 @@ Rcpp::List mc_american_heston_4d(
     // Compare exercise vs continuation for ITM paths
     for (int i = 0; i < n_itm; ++i) {
       int p = itm_indices[i];
-      size_t col_offset = static_cast<size_t>(step) * n_paths;
-      double Pt  = P_paths [p + col_offset];
-      double vst = std::max(vs_paths[p + col_offset], 0.0);
-      double vxt = std::max(vx_paths[p + col_offset], 0.0);
+      double Pt  = P_paths [p + step_offset];
+      double vst = std::max(vs_paths[p + step_offset], 0.0);
+      double vxt = std::max(vx_paths[p + step_offset], 0.0);
+      double p_over_k = Pt * inv_k;
       double exercise_val = is_call ? std::max(Pt - k, 0.0) : std::max(k - Pt, 0.0);
 
       // Estimated continuation
@@ -385,10 +401,10 @@ Rcpp::List mc_american_heston_4d(
       double basis = 1.0;
       for (int b = 0; b < n_basis; ++b) {
         continuation += beta[b] * basis;
-        basis *= Pt / k;
+        basis *= p_over_k;
       }
-      continuation += beta[n_basis]       * (vst / theta_s);
-      continuation += beta[n_basis + 1]   * (vxt / theta_x);
+      continuation += beta[n_basis]       * (vst * inv_theta_s);
+      continuation += beta[n_basis + 1]   * (vxt * inv_theta_x);
 
       if (exercise_val > continuation) {
         cashflow[p] = exercise_val;
@@ -404,7 +420,7 @@ Rcpp::List mc_american_heston_4d(
   double sum_disc_cf_sq = 0.0;
 
   for (int p = 0; p < n_paths; ++p) {
-    double disc_cf = cashflow[p] * std::exp(-r_d * exercise_time[p] * dt);
+    double disc_cf = cashflow[p] * disc_steps[exercise_time[p]];
     sum_disc_cf += disc_cf;
     sum_disc_cf_sq += disc_cf * disc_cf;
   }

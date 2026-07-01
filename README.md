@@ -118,7 +118,8 @@ prices <- batch_price_european_lv(spots, strikes, taus, r_ds, r_fs,
 # Price multiple American options in one call (parallel)
 prices_am <- batch_price_american_lv(spots, strikes, taus, r_ds, r_fs,
                                       Sigma, types, s_min, s_max, n_s, n_t,
-                                      lambda = 1e4, tolerance = 1e-8)
+                                      lambda = 1e4, tolerance = 1e-8,
+                                      n_threads = 0)
 ```
 
 ### Heston stochastic volatility
@@ -169,6 +170,29 @@ mc_am <- mc_american_heston_4d(
   rho_svx = 0, rho_xvs = 0, rho_vsvx = 0,
   type = "put", n_paths = 100000, n_steps = 50, seed = 42, n_basis = 4)
 c(price = mc_am$price, se = mc_am$std_error)
+```
+
+## Tidy-data conventions
+
+The package is designed to fit tidy workflows:
+
+- Vectorised batch APIs (`batch_price_european_lv()`, `batch_price_american_lv()`)
+  return one value per input contract, preserving input order.
+- Build analysis tables with one row per contract and one column per variable
+  (for example: `spot`, `strike`, `tau`, `type`, `model_price`).
+- Scalar/list outputs can be wrapped as one-row records with explicit fields.
+
+```r
+contracts <- data.frame(
+  spot = spots,
+  strike = strikes,
+  tau = taus,
+  r_d = r_ds,
+  r_f = r_fs,
+  type = types
+)
+contracts$model_price <- prices
+head(contracts)
 ```
 
 ### Closed-form (ADR)
