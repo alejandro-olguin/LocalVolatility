@@ -139,6 +139,8 @@ void solve_normal_equations(const std::vector<double>& X, // n*p column-major
 //' @param seed RNG seed for reproducibility.
 //' @param n_basis Number of polynomial basis functions for LSM regression
 //'   (default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).
+//' @param n_threads Number of threads for forward simulation (0 = auto-detect;
+//'   default 0). Set to 1 for fully reproducible results across machines.
 //'
 //' @return A list with components \code{price} (option price) and
 //'   \code{std_error} (Monte Carlo standard error estimate).
@@ -149,7 +151,9 @@ void solve_normal_equations(const std::vector<double>& X, // n*p column-major
 //' stored at each exercise date.
 //'
 //' The backward Longstaff-Schwartz pass regresses continuation values on
-//' polynomial basis functions of P at each exercise date. The regression
+//' polynomial basis functions of P and the current variance levels v_S, v_X
+//' at each exercise date. The basis is \code{1, P/K, ..., (P/K)^(n_basis-1),
+//' v_S/theta_S, v_X/theta_X} (n_basis+2 regressors total). The regression
 //' determines the optimal exercise boundary. Only in-the-money paths are
 //' used in the regression.
 //'
@@ -168,7 +172,7 @@ Rcpp::List mc_american_heston_4d(
     double rho_sx, double rho_sv, double rho_xv,
     double rho_svx, double rho_xvs, double rho_vsvx,
     String type,
-    int n_paths, int n_steps, int seed, int n_basis = 4) {
+    int n_paths, int n_steps, int seed, int n_basis = 4, int n_threads = 0) {
 
   // Input validation
   if (s_0 <= 0 || x_0 <= 0 || k <= 0) stop("s_0, x_0, and k must be > 0");
@@ -181,10 +185,10 @@ Rcpp::List mc_american_heston_4d(
   if (n_steps < 1) stop("n_steps must be >= 1");
   if (n_basis < 2 || n_basis > 8) stop("n_basis must be between 2 and 8");
 
-  // Guard against memory exhaustion: P_paths needs n_paths * (n_steps+1) doubles
-  const double alloc_bytes = static_cast<double>(n_paths) * (n_steps + 1) * sizeof(double);
+  // Guard against memory exhaustion: 3 path arrays (P, vs, vx) each n_paths * (n_steps+1)
+  const double alloc_bytes = 3.0 * static_cast<double>(n_paths) * (n_steps + 1) * sizeof(double);
   if (alloc_bytes > 2e9)
-    stop("Requested allocation (n_paths * n_steps) exceeds 2 GB safety limit. "
+    stop("Requested allocation (3 * n_paths * n_steps) exceeds 2 GB safety limit. "
          "Reduce n_paths or n_steps.");
 
   auto check_rho = [](double r, const char* name) {
@@ -226,16 +230,23 @@ Rcpp::List mc_american_heston_4d(
   // Storage: n_paths x (n_steps+1), column-major
   // ======================================================================= //
   std::vector<double> P_paths(static_cast<size_t>(n_paths) * (n_steps + 1));
+  std::vector<double> vs_paths(static_cast<size_t>(n_paths) * (n_steps + 1));
+  std::vector<double> vx_paths(static_cast<size_t>(n_paths) * (n_steps + 1));
 
   // Set initial values
   const double P_0 = s_0 * x_0;
-  for (int p = 0; p < n_paths; ++p)
-    P_paths[p] = P_0;
+  for (int p = 0; p < n_paths; ++p) {
+    P_paths[p]  = P_0;
+    vs_paths[p] = v_s0;
+    vx_paths[p] = v_x0;
+  }
 
   // Parallel forward simulation
-  unsigned int n_threads = std::thread::hardware_concurrency();
-  if (n_threads == 0) n_threads = 1;
-  if (n_threads > static_cast<unsigned int>(n_paths)) n_threads = n_paths;
+  unsigned int n_thr = (n_threads > 0)
+    ? static_cast<unsigned int>(n_threads)
+    : std::thread::hardware_concurrency();
+  if (n_thr == 0) n_thr = 1;
+  if (n_thr > static_cast<unsigned int>(n_paths)) n_thr = n_paths;
 
   auto simulate_forward = [&](unsigned int tid, int path_begin, int path_end) {
     std::mt19937_64 rng(static_cast<uint64_t>(seed) + tid * 1000003ULL);
@@ -268,21 +279,24 @@ Rcpp::List mc_american_heston_4d(
         vs    += kappa_s * (theta_s - vs_pos) * dt + xi_s * sqrt_vs * sqrt_dt * w2;
         vx    += kappa_x * (theta_x - vx_pos) * dt + xi_x * sqrt_vx * sqrt_dt * w3;
 
-        // Store product at step t+1
+        // Store product and variances at step t+1
         double S_t = std::exp(log_s);
         double X_t = std::exp(log_x);
-        P_paths[p + static_cast<size_t>(t + 1) * n_paths] = S_t * X_t;
+        size_t col = static_cast<size_t>(t + 1) * n_paths;
+        P_paths [p + col] = S_t * X_t;
+        vs_paths[p + col] = vs;
+        vx_paths[p + col] = vx;
       }
     }
   };
 
   {
     std::vector<std::thread> threads;
-    threads.reserve(n_threads);
-    int chunk = n_paths / n_threads;
-    int rem = n_paths % n_threads;
+    threads.reserve(n_thr);
+    int chunk = n_paths / n_thr;
+    int rem = n_paths % n_thr;
     int start = 0;
-    for (unsigned int t = 0; t < n_threads; ++t) {
+    for (unsigned int t = 0; t < n_thr; ++t) {
       int end = start + chunk + (static_cast<int>(t) < rem ? 1 : 0);
       threads.emplace_back(simulate_forward, t, start, end);
       start = end;
@@ -319,24 +333,31 @@ Rcpp::List mc_american_heston_4d(
     if (itm_indices.empty()) continue;
 
     int n_itm = static_cast<int>(itm_indices.size());
+    // Total regressors: n_basis polynomial terms in P/K + vs/theta_s + vx/theta_x
+    const int n_reg = n_basis + 2;
 
-    // Build design matrix X (n_itm x n_basis) and response Y
-    std::vector<double> Xmat(n_itm * n_basis, 0.0); // column-major
+    // Build design matrix X (n_itm x n_reg) and response Y
+    std::vector<double> Xmat(n_itm * n_reg, 0.0); // column-major
     std::vector<double> Y(n_itm, 0.0);
 
     for (int i = 0; i < n_itm; ++i) {
       int p = itm_indices[i];
-      double Pt = P_paths[p + static_cast<size_t>(step) * n_paths];
+      size_t col_offset = static_cast<size_t>(step) * n_paths;
+      double Pt  = P_paths [p + col_offset];
+      double vst = std::max(vs_paths[p + col_offset], 0.0);
+      double vxt = std::max(vx_paths[p + col_offset], 0.0);
 
-      // Basis functions: 1, P, P^2, P^3, ...
+      // Polynomial basis: 1, P/K, (P/K)^2, ...
       double basis = 1.0;
       for (int b = 0; b < n_basis; ++b) {
         Xmat[i + b * n_itm] = basis;
-        basis *= Pt / k; // normalize by K for numerical stability
+        basis *= Pt / k;
       }
+      // Variance regressors: normalized by long-run mean for scale
+      Xmat[i + n_basis       * n_itm] = vst / theta_s;
+      Xmat[i + (n_basis + 1) * n_itm] = vxt / theta_x;
 
       // Continuation value: discounted future cashflow from this path
-      // Discount from exercise_time[p] back to step
       int steps_fwd = exercise_time[p] - step;
       double disc_fwd = std::exp(-r_d * steps_fwd * dt);
       Y[i] = cashflow[p] * disc_fwd;
@@ -344,8 +365,8 @@ Rcpp::List mc_american_heston_4d(
 
     // Solve regression
     std::vector<double> beta;
-    if (n_itm >= n_basis) {
-      solve_normal_equations(Xmat, Y, n_itm, n_basis, beta);
+    if (n_itm >= n_reg) {
+      solve_normal_equations(Xmat, Y, n_itm, n_reg, beta);
     } else {
       continue; // not enough ITM paths for regression
     }
@@ -353,7 +374,10 @@ Rcpp::List mc_american_heston_4d(
     // Compare exercise vs continuation for ITM paths
     for (int i = 0; i < n_itm; ++i) {
       int p = itm_indices[i];
-      double Pt = P_paths[p + static_cast<size_t>(step) * n_paths];
+      size_t col_offset = static_cast<size_t>(step) * n_paths;
+      double Pt  = P_paths [p + col_offset];
+      double vst = std::max(vs_paths[p + col_offset], 0.0);
+      double vxt = std::max(vx_paths[p + col_offset], 0.0);
       double exercise_val = is_call ? std::max(Pt - k, 0.0) : std::max(k - Pt, 0.0);
 
       // Estimated continuation
@@ -363,6 +387,8 @@ Rcpp::List mc_american_heston_4d(
         continuation += beta[b] * basis;
         basis *= Pt / k;
       }
+      continuation += beta[n_basis]       * (vst / theta_s);
+      continuation += beta[n_basis + 1]   * (vxt / theta_x);
 
       if (exercise_val > continuation) {
         cashflow[p] = exercise_val;

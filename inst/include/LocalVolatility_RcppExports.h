@@ -276,17 +276,17 @@ namespace LocalVolatility {
         return Rcpp::as<double >(rcpp_result_gen);
     }
 
-    inline Rcpp::List mc_american_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_basis = 4) {
-        typedef SEXP(*Ptr_mc_american_heston_4d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline Rcpp::List mc_american_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_basis = 4, int n_threads = 0) {
+        typedef SEXP(*Ptr_mc_american_heston_4d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_mc_american_heston_4d p_mc_american_heston_4d = NULL;
         if (p_mc_american_heston_4d == NULL) {
-            validateSignature("Rcpp::List(*mc_american_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int)");
+            validateSignature("Rcpp::List(*mc_american_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int,int)");
             p_mc_american_heston_4d = (Ptr_mc_american_heston_4d)R_GetCCallable("LocalVolatility", "_LocalVolatility_mc_american_heston_4d");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_mc_american_heston_4d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(kappa_s)), Shield<SEXP>(Rcpp::wrap(theta_s)), Shield<SEXP>(Rcpp::wrap(xi_s)), Shield<SEXP>(Rcpp::wrap(v_s0)), Shield<SEXP>(Rcpp::wrap(kappa_x)), Shield<SEXP>(Rcpp::wrap(theta_x)), Shield<SEXP>(Rcpp::wrap(xi_x)), Shield<SEXP>(Rcpp::wrap(v_x0)), Shield<SEXP>(Rcpp::wrap(rho_sx)), Shield<SEXP>(Rcpp::wrap(rho_sv)), Shield<SEXP>(Rcpp::wrap(rho_xv)), Shield<SEXP>(Rcpp::wrap(rho_svx)), Shield<SEXP>(Rcpp::wrap(rho_xvs)), Shield<SEXP>(Rcpp::wrap(rho_vsvx)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(n_paths)), Shield<SEXP>(Rcpp::wrap(n_steps)), Shield<SEXP>(Rcpp::wrap(seed)), Shield<SEXP>(Rcpp::wrap(n_basis)));
+            rcpp_result_gen = p_mc_american_heston_4d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(kappa_s)), Shield<SEXP>(Rcpp::wrap(theta_s)), Shield<SEXP>(Rcpp::wrap(xi_s)), Shield<SEXP>(Rcpp::wrap(v_s0)), Shield<SEXP>(Rcpp::wrap(kappa_x)), Shield<SEXP>(Rcpp::wrap(theta_x)), Shield<SEXP>(Rcpp::wrap(xi_x)), Shield<SEXP>(Rcpp::wrap(v_x0)), Shield<SEXP>(Rcpp::wrap(rho_sx)), Shield<SEXP>(Rcpp::wrap(rho_sv)), Shield<SEXP>(Rcpp::wrap(rho_xv)), Shield<SEXP>(Rcpp::wrap(rho_svx)), Shield<SEXP>(Rcpp::wrap(rho_xvs)), Shield<SEXP>(Rcpp::wrap(rho_vsvx)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(n_paths)), Shield<SEXP>(Rcpp::wrap(n_steps)), Shield<SEXP>(Rcpp::wrap(seed)), Shield<SEXP>(Rcpp::wrap(n_basis)), Shield<SEXP>(Rcpp::wrap(n_threads)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -297,17 +297,17 @@ namespace LocalVolatility {
         return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
-    inline Rcpp::List mc_european_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed) {
-        typedef SEXP(*Ptr_mc_european_heston_4d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline Rcpp::List mc_european_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_threads = 0) {
+        typedef SEXP(*Ptr_mc_european_heston_4d)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_mc_european_heston_4d p_mc_european_heston_4d = NULL;
         if (p_mc_european_heston_4d == NULL) {
-            validateSignature("Rcpp::List(*mc_european_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int)");
+            validateSignature("Rcpp::List(*mc_european_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int)");
             p_mc_european_heston_4d = (Ptr_mc_european_heston_4d)R_GetCCallable("LocalVolatility", "_LocalVolatility_mc_european_heston_4d");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_mc_european_heston_4d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(kappa_s)), Shield<SEXP>(Rcpp::wrap(theta_s)), Shield<SEXP>(Rcpp::wrap(xi_s)), Shield<SEXP>(Rcpp::wrap(v_s0)), Shield<SEXP>(Rcpp::wrap(kappa_x)), Shield<SEXP>(Rcpp::wrap(theta_x)), Shield<SEXP>(Rcpp::wrap(xi_x)), Shield<SEXP>(Rcpp::wrap(v_x0)), Shield<SEXP>(Rcpp::wrap(rho_sx)), Shield<SEXP>(Rcpp::wrap(rho_sv)), Shield<SEXP>(Rcpp::wrap(rho_xv)), Shield<SEXP>(Rcpp::wrap(rho_svx)), Shield<SEXP>(Rcpp::wrap(rho_xvs)), Shield<SEXP>(Rcpp::wrap(rho_vsvx)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(n_paths)), Shield<SEXP>(Rcpp::wrap(n_steps)), Shield<SEXP>(Rcpp::wrap(seed)));
+            rcpp_result_gen = p_mc_european_heston_4d(Shield<SEXP>(Rcpp::wrap(s_0)), Shield<SEXP>(Rcpp::wrap(x_0)), Shield<SEXP>(Rcpp::wrap(k)), Shield<SEXP>(Rcpp::wrap(tau)), Shield<SEXP>(Rcpp::wrap(r_d)), Shield<SEXP>(Rcpp::wrap(r_f)), Shield<SEXP>(Rcpp::wrap(q)), Shield<SEXP>(Rcpp::wrap(kappa_s)), Shield<SEXP>(Rcpp::wrap(theta_s)), Shield<SEXP>(Rcpp::wrap(xi_s)), Shield<SEXP>(Rcpp::wrap(v_s0)), Shield<SEXP>(Rcpp::wrap(kappa_x)), Shield<SEXP>(Rcpp::wrap(theta_x)), Shield<SEXP>(Rcpp::wrap(xi_x)), Shield<SEXP>(Rcpp::wrap(v_x0)), Shield<SEXP>(Rcpp::wrap(rho_sx)), Shield<SEXP>(Rcpp::wrap(rho_sv)), Shield<SEXP>(Rcpp::wrap(rho_xv)), Shield<SEXP>(Rcpp::wrap(rho_svx)), Shield<SEXP>(Rcpp::wrap(rho_xvs)), Shield<SEXP>(Rcpp::wrap(rho_vsvx)), Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(n_paths)), Shield<SEXP>(Rcpp::wrap(n_steps)), Shield<SEXP>(Rcpp::wrap(seed)), Shield<SEXP>(Rcpp::wrap(n_threads)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

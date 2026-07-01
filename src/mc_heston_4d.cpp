@@ -67,6 +67,9 @@ bool cholesky4(const double R[4][4], double L[4][4]) {
 //' @param n_paths Number of Monte Carlo paths (e.g. 1e6).
 //' @param n_steps Number of time steps per path (e.g. 100).
 //' @param seed RNG seed for reproducibility.
+//' @param n_threads Number of threads to use (0 = auto-detect via
+//'   \code{std::thread::hardware_concurrency()}; default 0). Set to 1 for
+//'   fully reproducible results across machines.
 //'
 //' @return A list with components \code{price} (option price) and
 //'   \code{std_error} (Monte Carlo standard error).
@@ -99,7 +102,7 @@ Rcpp::List mc_european_heston_4d(
     double rho_sx, double rho_sv, double rho_xv,
     double rho_svx, double rho_xvs, double rho_vsvx,
     String type,
-    int n_paths, int n_steps, int seed) {
+    int n_paths, int n_steps, int seed, int n_threads = 0) {
 
   // Input validation
   if (s_0 <= 0 || x_0 <= 0 || k <= 0) stop("s_0, x_0, and k must be > 0");
@@ -148,14 +151,16 @@ Rcpp::List mc_european_heston_4d(
   const double disc = std::exp(-r_d * tau);
 
   // Thread setup
-  unsigned int n_threads = std::thread::hardware_concurrency();
-  if (n_threads == 0) n_threads = 1;
+  unsigned int n_thr = (n_threads > 0)
+    ? static_cast<unsigned int>(n_threads)
+    : std::thread::hardware_concurrency();
+  if (n_thr == 0) n_thr = 1;
   // Each antithetic pair = 1 "path unit"; n_paths is actual number of path pairs
 
 
   // Per-thread accumulators
-  std::vector<double> thread_sum(n_threads, 0.0);
-  std::vector<double> thread_sum_sq(n_threads, 0.0);
+  std::vector<double> thread_sum(n_thr, 0.0);
+  std::vector<double> thread_sum_sq(n_thr, 0.0);
 
   // Worker lambda
   auto simulate = [&](unsigned int tid, int path_begin, int path_end) {
@@ -220,16 +225,16 @@ Rcpp::List mc_european_heston_4d(
   };
 
   // Launch threads
-  if (n_threads > static_cast<unsigned int>(n_paths)) n_threads = n_paths;
+  if (n_thr > static_cast<unsigned int>(n_paths)) n_thr = n_paths;
 
   std::vector<std::thread> threads;
-  threads.reserve(n_threads);
+  threads.reserve(n_thr);
 
-  int chunk = n_paths / n_threads;
-  int remainder = n_paths % n_threads;
+  int chunk = n_paths / n_thr;
+  int remainder = n_paths % n_thr;
   int start = 0;
 
-  for (unsigned int t = 0; t < n_threads; ++t) {
+  for (unsigned int t = 0; t < n_thr; ++t) {
     int end = start + chunk + (static_cast<int>(t) < remainder ? 1 : 0);
     threads.emplace_back(simulate, t, start, end);
     start = end;
@@ -239,7 +244,7 @@ Rcpp::List mc_european_heston_4d(
 
   // Aggregate results
   double total_sum = 0.0, total_sum_sq = 0.0;
-  for (unsigned int t = 0; t < n_threads; ++t) {
+  for (unsigned int t = 0; t < n_thr; ++t) {
     total_sum += thread_sum[t];
     total_sum_sq += thread_sum_sq[t];
   }

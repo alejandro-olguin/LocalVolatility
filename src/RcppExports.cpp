@@ -601,8 +601,8 @@ RcppExport SEXP _LocalVolatility_heston_cf(SEXP s_0SEXP, SEXP kSEXP, SEXP tauSEX
     return rcpp_result_gen;
 }
 // mc_american_heston_4d
-Rcpp::List mc_american_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_basis);
-static SEXP _LocalVolatility_mc_american_heston_4d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_basisSEXP) {
+Rcpp::List mc_american_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_basis, int n_threads);
+static SEXP _LocalVolatility_mc_american_heston_4d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_basisSEXP, SEXP n_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
@@ -631,15 +631,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_steps(n_stepsSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< int >::type n_basis(n_basisSEXP);
-    rcpp_result_gen = Rcpp::wrap(mc_american_heston_4d(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis));
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mc_american_heston_4d(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis, n_threads));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_mc_american_heston_4d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_basisSEXP) {
+RcppExport SEXP _LocalVolatility_mc_american_heston_4d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_basisSEXP, SEXP n_threadsSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_mc_american_heston_4d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, kappa_sSEXP, theta_sSEXP, xi_sSEXP, v_s0SEXP, kappa_xSEXP, theta_xSEXP, xi_xSEXP, v_x0SEXP, rho_sxSEXP, rho_svSEXP, rho_xvSEXP, rho_svxSEXP, rho_xvsSEXP, rho_vsvxSEXP, typeSEXP, n_pathsSEXP, n_stepsSEXP, seedSEXP, n_basisSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_mc_american_heston_4d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, kappa_sSEXP, theta_sSEXP, xi_sSEXP, v_s0SEXP, kappa_xSEXP, theta_xSEXP, xi_xSEXP, v_x0SEXP, rho_sxSEXP, rho_svSEXP, rho_xvSEXP, rho_svxSEXP, rho_xvsSEXP, rho_vsvxSEXP, typeSEXP, n_pathsSEXP, n_stepsSEXP, seedSEXP, n_basisSEXP, n_threadsSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -660,8 +661,8 @@ RcppExport SEXP _LocalVolatility_mc_american_heston_4d(SEXP s_0SEXP, SEXP x_0SEX
     return rcpp_result_gen;
 }
 // mc_european_heston_4d
-Rcpp::List mc_european_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed);
-static SEXP _LocalVolatility_mc_european_heston_4d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP) {
+Rcpp::List mc_european_heston_4d(double s_0, double x_0, double k, double tau, double r_d, double r_f, double q, double kappa_s, double theta_s, double xi_s, double v_s0, double kappa_x, double theta_x, double xi_x, double v_x0, double rho_sx, double rho_sv, double rho_xv, double rho_svx, double rho_xvs, double rho_vsvx, String type, int n_paths, int n_steps, int seed, int n_threads);
+static SEXP _LocalVolatility_mc_european_heston_4d_try(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< double >::type s_0(s_0SEXP);
@@ -689,15 +690,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_paths(n_pathsSEXP);
     Rcpp::traits::input_parameter< int >::type n_steps(n_stepsSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(mc_european_heston_4d(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed));
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mc_european_heston_4d(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_threads));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _LocalVolatility_mc_european_heston_4d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP) {
+RcppExport SEXP _LocalVolatility_mc_european_heston_4d(SEXP s_0SEXP, SEXP x_0SEXP, SEXP kSEXP, SEXP tauSEXP, SEXP r_dSEXP, SEXP r_fSEXP, SEXP qSEXP, SEXP kappa_sSEXP, SEXP theta_sSEXP, SEXP xi_sSEXP, SEXP v_s0SEXP, SEXP kappa_xSEXP, SEXP theta_xSEXP, SEXP xi_xSEXP, SEXP v_x0SEXP, SEXP rho_sxSEXP, SEXP rho_svSEXP, SEXP rho_xvSEXP, SEXP rho_svxSEXP, SEXP rho_xvsSEXP, SEXP rho_vsvxSEXP, SEXP typeSEXP, SEXP n_pathsSEXP, SEXP n_stepsSEXP, SEXP seedSEXP, SEXP n_threadsSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_LocalVolatility_mc_european_heston_4d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, kappa_sSEXP, theta_sSEXP, xi_sSEXP, v_s0SEXP, kappa_xSEXP, theta_xSEXP, xi_xSEXP, v_x0SEXP, rho_sxSEXP, rho_svSEXP, rho_xvSEXP, rho_svxSEXP, rho_xvsSEXP, rho_vsvxSEXP, typeSEXP, n_pathsSEXP, n_stepsSEXP, seedSEXP));
+        rcpp_result_gen = PROTECT(_LocalVolatility_mc_european_heston_4d_try(s_0SEXP, x_0SEXP, kSEXP, tauSEXP, r_dSEXP, r_fSEXP, qSEXP, kappa_sSEXP, theta_sSEXP, xi_sSEXP, v_s0SEXP, kappa_xSEXP, theta_xSEXP, xi_xSEXP, v_x0SEXP, rho_sxSEXP, rho_svSEXP, rho_xvSEXP, rho_svxSEXP, rho_xvsSEXP, rho_vsvxSEXP, typeSEXP, n_pathsSEXP, n_stepsSEXP, seedSEXP, n_threadsSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -772,8 +774,8 @@ static int _LocalVolatility_RcppExport_validate(const char* sig) {
         signatures.insert("double(*european_option_lv)(double,double,double,double,double,NumericMatrix,String,double,double,int,int)");
         signatures.insert("double(*european_option_lv_2d)(double,double,double,double,double,double,double,NumericMatrix,NumericMatrix,double,String,double,double,double,double,int,int,int,double)");
         signatures.insert("double(*heston_cf)(double,double,double,double,double,double,double,double,double,double,String)");
-        signatures.insert("Rcpp::List(*mc_american_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int)");
-        signatures.insert("Rcpp::List(*mc_european_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int)");
+        signatures.insert("Rcpp::List(*mc_american_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int,int)");
+        signatures.insert("Rcpp::List(*mc_european_heston_4d)(double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,double,String,int,int,int,int)");
         signatures.insert("NumericVector(*tavella_randall)(double,double,double,double,int)");
     }
     return signatures.find(sig) != signatures.end();
@@ -813,8 +815,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LocalVolatility_european_option_lv", (DL_FUNC) &_LocalVolatility_european_option_lv, 11},
     {"_LocalVolatility_european_option_lv_2d", (DL_FUNC) &_LocalVolatility_european_option_lv_2d, 19},
     {"_LocalVolatility_heston_cf", (DL_FUNC) &_LocalVolatility_heston_cf, 11},
-    {"_LocalVolatility_mc_american_heston_4d", (DL_FUNC) &_LocalVolatility_mc_american_heston_4d, 26},
-    {"_LocalVolatility_mc_european_heston_4d", (DL_FUNC) &_LocalVolatility_mc_european_heston_4d, 25},
+    {"_LocalVolatility_mc_american_heston_4d", (DL_FUNC) &_LocalVolatility_mc_american_heston_4d, 27},
+    {"_LocalVolatility_mc_european_heston_4d", (DL_FUNC) &_LocalVolatility_mc_european_heston_4d, 26},
     {"_LocalVolatility_tavella_randall", (DL_FUNC) &_LocalVolatility_tavella_randall, 5},
     {"_LocalVolatility_RcppExport_registerCCallable", (DL_FUNC) &_LocalVolatility_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}

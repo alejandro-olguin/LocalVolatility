@@ -81,7 +81,7 @@ double american_option_2d(double s_0,
       }
     } else {
       for (int j = 0; j <= n_x; ++j) {
-        leftS[j]  = k * std::exp(-r_d * tau_rem);
+        leftS[j]  = std::max(k - s[0] * x[j], 0.0);
         rightS[j] = 0.0;
       }
     }
@@ -99,7 +99,7 @@ double american_option_2d(double s_0,
       }
     } else {
       for (int i = 0; i <= n_s; ++i) {
-        leftX[i]  = k * std::exp(-r_d * tau_rem);
+        leftX[i]  = std::max(k - s[i] * x[0], 0.0);
         rightX[i] = 0.0;
       }
     }

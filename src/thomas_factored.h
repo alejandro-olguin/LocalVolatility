@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <string>
 
 namespace thomas {
 
@@ -18,13 +19,18 @@ namespace thomas {
 // a, b, c are NOT modified. d is NOT modified. cp is overwritten.
 inline void solve(const double* a, const double* b, const double* c,
                   const double* d, double* x, double* cp, int N) {
+  static constexpr double eps = 1e-16;
   // Forward sweep
   double denom = b[0];
+  if (std::fabs(denom) < eps)
+    throw std::runtime_error("thomas::solve: zero pivot at row 0");
   cp[0] = c[0] / denom;
   x[0]  = d[0] / denom;
 
   for (int i = 1; i < N; ++i) {
     denom = b[i] - a[i] * cp[i - 1];
+    if (std::fabs(denom) < eps)
+      throw std::runtime_error("thomas::solve: zero pivot at row " + std::to_string(i));
     cp[i] = c[i] / denom;
     x[i]  = (d[i] - a[i] * x[i - 1]) / denom;
   }
@@ -44,12 +50,17 @@ inline void solve(const double* a, const double* b, const double* c,
 // where denom[0] = b[0], denom[i] = b[i] - a[i]*cp[i-1]
 inline void factor(const double* a, const double* b, const double* c,
                    double* cp, double* inv_denom, int N) {
+  static constexpr double eps = 1e-16;
   double denom = b[0];
+  if (std::fabs(denom) < eps)
+    throw std::runtime_error("thomas::factor: zero pivot at row 0");
   inv_denom[0] = 1.0 / denom;
   cp[0] = c[0] * inv_denom[0];
 
   for (int i = 1; i < N; ++i) {
     denom = b[i] - a[i] * cp[i - 1];
+    if (std::fabs(denom) < eps)
+      throw std::runtime_error("thomas::factor: zero pivot at row " + std::to_string(i));
     inv_denom[i] = 1.0 / denom;
     cp[i] = c[i] * inv_denom[i];
   }

@@ -111,7 +111,7 @@ double american_option_heston(double s_0,
       }
     } else {
       for (int j = 0; j <= n_v; ++j) {
-        leftS[j]  = k * std::exp(-r_d * tau_rem);
+        leftS[j]  = std::max(k - s[0], 0.0);
         rightS[j] = 0.0;
       }
     }
@@ -247,9 +247,9 @@ double american_option_heston(double s_0,
       for (int j = 0; j <= n_v; ++j) { u_new(0, j) = leftS[j]; u_new(n_s, j) = rightS[j]; }
       for (int i = 0; i <= n_s; ++i) { u_new(i, n_v) = rightV[i]; }
 
-      // v_min boundary: linear extrapolation from j=1, j=2
+      // v_min boundary: linear extrapolation from j=1, j=2, clamped to non-negative
       for (int i = 0; i <= n_s; ++i) {
-        u_new(i, 0) = u_new(i, 1) - hv[0] * (u_new(i, 2) - u_new(i, 1)) / hv[1];
+        u_new(i, 0) = std::max(0.0, u_new(i, 1) - hv[0] * (u_new(i, 2) - u_new(i, 1)) / hv[1]);
       }
 
       // Project to obstacle and compute relative error

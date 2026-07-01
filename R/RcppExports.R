@@ -551,6 +551,8 @@ heston_cf <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type) {
 #' @param seed RNG seed for reproducibility.
 #' @param n_basis Number of polynomial basis functions for LSM regression
 #'   (default 4: \code{1, P, P^2, P^3} where \code{P = S*X}).
+#' @param n_threads Number of threads for forward simulation (0 = auto-detect;
+#'   default 0). Set to 1 for fully reproducible results across machines.
 #'
 #' @return A list with components \code{price} (option price) and
 #'   \code{std_error} (Monte Carlo standard error estimate).
@@ -561,7 +563,9 @@ heston_cf <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type) {
 #' stored at each exercise date.
 #'
 #' The backward Longstaff-Schwartz pass regresses continuation values on
-#' polynomial basis functions of P at each exercise date. The regression
+#' polynomial basis functions of P and the current variance levels v_S, v_X
+#' at each exercise date. The basis is \code{1, P/K, ..., (P/K)^(n_basis-1),
+#' v_S/theta_S, v_X/theta_X} (n_basis+2 regressors total). The regression
 #' determines the optimal exercise boundary. Only in-the-money paths are
 #' used in the regression.
 #'
@@ -571,8 +575,8 @@ heston_cf <- function(s_0, k, tau, r_d, q, kappa, theta, xi, rho, v_0, type) {
 #'   0.3, -0.7, -0.5, 0, 0, 0, "put", 50000, 50, 42, 4)
 #'
 #' @export
-mc_american_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis = 4L) {
-    .Call(`_LocalVolatility_mc_american_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis)
+mc_american_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis = 4L, n_threads = 0L) {
+    .Call(`_LocalVolatility_mc_american_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_basis, n_threads)
 }
 
 #' European Option 4D Monte Carlo (Double-Heston Quanto)
@@ -607,6 +611,9 @@ mc_american_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_
 #' @param n_paths Number of Monte Carlo paths (e.g. 1e6).
 #' @param n_steps Number of time steps per path (e.g. 100).
 #' @param seed RNG seed for reproducibility.
+#' @param n_threads Number of threads to use (0 = auto-detect via
+#'   \code{std::thread::hardware_concurrency()}; default 0). Set to 1 for
+#'   fully reproducible results across machines.
 #'
 #' @return A list with components \code{price} (option price) and
 #'   \code{std_error} (Monte Carlo standard error).
@@ -630,8 +637,8 @@ mc_american_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_
 #'   0.3, -0.7, -0.5, 0, 0, 0, "call", 100000, 100, 42)
 #'
 #' @export
-mc_european_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed) {
-    .Call(`_LocalVolatility_mc_european_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed)
+mc_european_heston_4d <- function(s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_threads = 0L) {
+    .Call(`_LocalVolatility_mc_european_heston_4d`, s_0, x_0, k, tau, r_d, r_f, q, kappa_s, theta_s, xi_s, v_s0, kappa_x, theta_x, xi_x, v_x0, rho_sx, rho_sv, rho_xv, rho_svx, rho_xvs, rho_vsvx, type, n_paths, n_steps, seed, n_threads)
 }
 
 #' Generate a sequence based on the Tavella and Randall method
