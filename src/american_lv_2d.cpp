@@ -2,6 +2,7 @@
 
 #include <Rcpp.h>
 #include "utils.h"
+#include "sigma_time.h"
 
 using namespace Rcpp;
 
@@ -27,7 +28,8 @@ double american_option_lv_2d(double s_0,
                              int n_t,
                              double alpha,
                              double lambda,
-                             double tolerance) {
+                             double tolerance,
+                             double sigma_t_max) {
 
   // Input guards
   if (n_s < 3 || n_x < 3) stop("n_s and n_x must be >= 3");
@@ -37,10 +39,10 @@ double american_option_lv_2d(double s_0,
   if (rho < -1.0 || rho > 1.0) stop("rho must be within [-1, 1]");
   if (lambda <= 0.0)       stop("lambda must be > 0");
   if (tolerance <= 0.0)    stop("tolerance must be > 0");
-  if (sigma_s.nrow() != n_s + 1 || sigma_s.ncol() != n_t)
-    stop("sigma_s must have dimensions (n_s+1) x n_t");
-  if (sigma_x.nrow() != n_x + 1 || sigma_x.ncol() != n_t)
-    stop("sigma_x must have dimensions (n_x+1) x n_t");
+  if (sigma_s.nrow() != n_s + 1 || sigma_s.ncol() < 1)
+    stop("sigma_s must have n_s+1 rows (columns = calendar-time nodes on [0, sigma_t_max])");
+  if (sigma_x.nrow() != n_x + 1 || sigma_x.ncol() < 1)
+    stop("sigma_x must have n_x+1 rows (columns = calendar-time nodes on [0, sigma_t_max])");
 
   // Grids (Tavella-Randall non-uniform)
   NumericVector s = tavella_randall(s_0, alpha, s_min, s_max, n_s);
@@ -52,7 +54,10 @@ double american_option_lv_2d(double s_0,
   for (int j = 0; j < n_x; ++j) hx[j] = x[j + 1] - x[j];
 
   const double dt = tau / n_t;
-  const double half_lambda = 0.5 * lambda;
+  // Penalty scaled relative to the identity (the 2D system is divided by dt),
+  // so `lambda` has the same meaning as in the 1D solvers.
+  const double half_lambda = 0.5 * lambda / dt;
+  const double t_sig = (sigma_t_max > 0.0) ? sigma_t_max : tau;
   const int max_iter = 200;
 
   // Payoff on S*X
@@ -82,8 +87,11 @@ double american_option_lv_2d(double s_0,
     if (type == "call") {
       for (int j = 0; j <= n_x; ++j) {
         leftS[j]  = 0.0;
-        rightS[j] = std::max(s[n_s] * x[j] * std::exp(-(r_f + q) * tau_rem)
-                                - k * std::exp(-r_d * tau_rem), 0.0);
+        // Far field: max(European asymptote, immediate exercise). Under the
+        // domestic measure S*X drifts at r_d - q, so the asymptote is
+        // S*X*exp(-q*tau) - K*exp(-r_d*tau).
+        rightS[j] = std::max(std::max(s[n_s] * x[j] * std::exp(-q * tau_rem)
+                                - k * std::exp(-r_d * tau_rem), 0.0), payoff(n_s, j));
       }
     } else {
       for (int j = 0; j <= n_x; ++j) {
@@ -100,8 +108,8 @@ double american_option_lv_2d(double s_0,
     if (type == "call") {
       for (int i = 0; i <= n_s; ++i) {
         leftX[i]  = 0.0;
-        rightX[i] = std::max(s[i] * x[n_x] * std::exp(-(r_f + q) * tau_rem)
-                                - k * std::exp(-r_d * tau_rem), 0.0);
+        rightX[i] = std::max(std::max(s[i] * x[n_x] * std::exp(-q * tau_rem)
+                                - k * std::exp(-r_d * tau_rem), 0.0), payoff(i, n_x));
       }
     } else {
       for (int i = 0; i <= n_s; ++i) {
@@ -118,6 +126,10 @@ double american_option_lv_2d(double s_0,
   // Time stepping (backward)
   for (int n = 0; n < n_t; ++n) {
     const double tau_rem = (n_t - (n + 1)) * dt;
+    // Calendar time of the new (implicit) level; sigma columns span [0, t_sig].
+    const double t_new = tau - tau_rem;
+    const lvtime::ColLerp cl_s = lvtime::col_lerp(t_new, t_sig, sigma_s.ncol());
+    const lvtime::ColLerp cl_x = lvtime::col_lerp(t_new, t_sig, sigma_x.ncol());
 
     NumericVector leftS, rightS, leftX, rightX;
     set_S_boundaries(tau_rem, leftS, rightS);
@@ -145,8 +157,8 @@ double american_option_lv_2d(double s_0,
           const double h_im1 = hs[i - 1], h_i = hs[i];
           const double Si = s[i], Xj = x[j];
 
-          const double sigS = sigma_s(i, n);
-          const double sigX = sigma_x(j, n);
+          const double sigS = lvtime::at(sigma_s, i, cl_s);
+          const double sigX = lvtime::at(sigma_x, j, cl_x);
           const double a2S = sigS * sigS * Si * Si;
 
           const double muS = r_f - q - rho * sigS * sigX;
@@ -195,8 +207,8 @@ double american_option_lv_2d(double s_0,
           const double h_jm1 = hx[j - 1], h_j = hx[j];
           const double Si = s[i], Xj = x[j];
 
-          const double sigS = sigma_s(i, n);
-          const double sigX = sigma_x(j, n);
+          const double sigS = lvtime::at(sigma_s, i, cl_s);
+          const double sigX = lvtime::at(sigma_x, j, cl_x);
           const double a2X = sigX * sigX * Xj * Xj;
 
           ax[j - 1] = ((r_d - r_f) * Xj * h_j - a2X) / (h_jm1 * (h_jm1 + h_j));
@@ -268,8 +280,12 @@ double american_option_lv_2d(double s_0,
 //' @param r_d Risk-free rate (domestic).
 //' @param r_f Risk-free rate (foreign).
 //' @param q Dividend yield.
-//' @param sigma_s Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.
-//' @param sigma_x Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.
+//' @param sigma_s Local volatility matrix for the stock with \code{n_s + 1} rows.
+//'   Columns are uniformly spaced in calendar time on \code{[0, sigma_t_max]}:
+//'   column 1 is the valuation date, the last column is \code{sigma_t_max}.
+//'   Any number of columns is accepted; values are interpolated in time.
+//' @param sigma_x Local volatility matrix for the FX with \code{n_x + 1} rows,
+//'   same time convention as \code{sigma_s}.
 //' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
 //' @param type Either \code{"call"} or \code{"put"}.
 //' @param s_min,s_max Min/Max of the stock grid.
@@ -278,16 +294,23 @@ double american_option_lv_2d(double s_0,
 //' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 //' @param n_t Number of time steps.
 //' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
-//' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
+//' @param lambda Penalty parameter (> 0). Scaled internally by \code{1/dt} so it
+//'   has the same meaning as in the 1D solvers (relative to the identity).
 //' @param tolerance Convergence tolerance for penalty iterations.
+//' @param sigma_t_max Calendar horizon (years) spanned by the sigma columns.
+//'   Defaults to \code{tau} when not positive, i.e. the matrices describe
+//'   exactly this option's life. Pass the common horizon when one matrix is
+//'   shared across options of different maturities.
 //'
 //' @return Option price as a numeric scalar.
 //'
 //' @details
 //' Domestic-measure dynamics with pointwise volatilities:
 //' \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X} in S, \eqn{r_d - r_f} in X,
-//' discounting at \eqn{r_d}. The penalty parameter is split as \eqn{\lambda/2}
-//' across the two operator-splitting sub-steps. Maximum 200 penalty iterations
+//' discounting at \eqn{r_d}. Far-field Dirichlet values are the maximum of the
+//' European asymptote \eqn{SX e^{-q\tau} - K e^{-r_d\tau}} and the payoff. The
+//' penalty parameter is split as \eqn{\lambda/2} across the two
+//' operator-splitting sub-steps. Maximum 200 penalty iterations
 //' per time step with a warning on non-convergence.
 //'
 //' @examples
@@ -319,11 +342,12 @@ double american_option_lv_2d(double s_0,
                              int n_t,
                              double alpha,
                              double lambda,
-                             double tolerance) {
+                             double tolerance,
+                             double sigma_t_max = -1.0) {
 
   return LocalVolatility::american_option_lv_2d(s_0, x_0, k, tau, r_d, r_f, q,
                                                 sigma_s, sigma_x, rho, type,
                                                 s_min, s_max, x_min, x_max,
                                                 n_s, n_x, n_t, alpha,
-                                                lambda, tolerance);
+                                                lambda, tolerance, sigma_t_max);
 }

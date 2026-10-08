@@ -65,7 +65,7 @@ double european_option_2d(double s_0,
   NumericVector aX(n_x - 1), bX(n_x - 1), cX(n_x - 1), fX(n_x - 1);
 
   // Analytic far-field Dirichlet boundaries for product options
-  // Under domestic measure: forward of S*X is S*X*exp((r_d - r_f - q)*tau)
+  // Under domestic measure: forward of S*X is S*X*exp((r_d - q)*tau)
   auto set_S_boundaries = [&](double tau_rem,
                               NumericVector& leftS, NumericVector& rightS) {
     leftS  = NumericVector(n_x + 1);
@@ -73,7 +73,7 @@ double european_option_2d(double s_0,
     if (type == "call") {
       for (int j = 0; j <= n_x; ++j) {
         leftS[j]  = 0.0;
-        rightS[j] = std::max(s[n_s] * x[j] * std::exp(-(r_f + q) * tau_rem)
+        rightS[j] = std::max(s[n_s] * x[j] * std::exp(-q * tau_rem)
                                 - k * std::exp(-r_d * tau_rem), 0.0);
       }
     } else {
@@ -91,7 +91,7 @@ double european_option_2d(double s_0,
     if (type == "call") {
       for (int i = 0; i <= n_s; ++i) {
         leftX[i]  = 0.0;
-        rightX[i] = std::max(s[i] * x[n_x] * std::exp(-(r_f + q) * tau_rem)
+        rightX[i] = std::max(s[i] * x[n_x] * std::exp(-q * tau_rem)
                                 - k * std::exp(-r_d * tau_rem), 0.0);
       }
     } else {

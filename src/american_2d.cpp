@@ -49,7 +49,7 @@ double american_option_2d(double s_0,
   for (int j = 0; j < n_x; ++j) hx[j] = x[j + 1] - x[j];
 
   const double dt = tau / n_t;
-  const double half_lambda = 0.5 * lambda;
+  const double half_lambda = 0.5 * lambda / dt;  // penalty scaled like the 1D solvers (relative to the identity)
   const int max_iter = 200;
 
   // Payoff on S*X
@@ -76,7 +76,7 @@ double american_option_2d(double s_0,
     if (type == "call") {
       for (int j = 0; j <= n_x; ++j) {
         leftS[j]  = 0.0;
-        rightS[j] = std::max(s[n_s] * x[j] * std::exp(-(r_f + q) * tau_rem)
+        rightS[j] = std::max(s[n_s] * x[j] * std::exp(-q * tau_rem)
                                 - k * std::exp(-r_d * tau_rem), 0.0);
       }
     } else {
@@ -94,7 +94,7 @@ double american_option_2d(double s_0,
     if (type == "call") {
       for (int i = 0; i <= n_s; ++i) {
         leftX[i]  = 0.0;
-        rightX[i] = std::max(s[i] * x[n_x] * std::exp(-(r_f + q) * tau_rem)
+        rightX[i] = std::max(s[i] * x[n_x] * std::exp(-q * tau_rem)
                                 - k * std::exp(-r_d * tau_rem), 0.0);
       }
     } else {

@@ -1,3 +1,43 @@
+# LocalVolatility 3.3.0 (2026-10-03)
+
+## Breaking: one calendar-time convention for sigma matrices
+
+- All local-volatility solvers now read `sigma` columns as **calendar time**
+  on `[0, t_max]`: column 1 is the valuation date, the last column is
+  `t_max`, and values are linearly interpolated in time. Previously three
+  conventions coexisted: `batch_price_european_lv` indexed columns by
+  time-to-maturity anchored at `max(taus)`, `batch_price_american_lv` and the
+  2D solvers indexed them by the option's *relative* time `t/T`, and the 1D
+  single-option solvers by calendar time. A 3-month option under a step
+  volatility (0.40 for t < 0.25, 0.10 after) returned IV 0.10 / 0.22 / 0.22
+  from the three paths; all now return 0.40 (`test_time_axis.R`).
+- `european_option_lv_2d()` / `american_option_lv_2d()` gain
+  `sigma_t_max` (default `tau`): the calendar horizon spanned by the sigma
+  columns. Pass the common horizon when one matrix is shared across options.
+  Callers that reversed matrices in time must stop doing so. Any number of
+  columns is accepted (the `ncol == n_t` requirement is dropped).
+- `batch_price_european_lv()` / `batch_price_american_lv()` gain `t_max`
+  (default `max(taus)`) with the same meaning; the `ncol == n_t + 1`
+  requirement is dropped.
+
+## Fixes
+
+- `batch_price_european_lv()`: maturities are no longer rounded to multiples
+  of `max(taus)/n_t`. Each option now runs its own exact-step sweep (a 1-week
+  FX tenor on a 1.5y/350-step grid was mispriced by 3 % in IV, a 1-day tenor
+  by 40 %). The solver is now threaded like the American batch.
+- 2D far-field call boundary used `exp(-(r_f + q) tau)`; under the domestic
+  measure `S*X` drifts at `r_d - q`, so the asymptote is
+  `S*X*exp(-q tau) - K*exp(-r_d tau)`. The European 2D solvers were off by
+  -7 % at 5y and -19 % at 9y with 3x domain bounds; the American solvers set
+  the far field to `max(asymptote, payoff)`.
+- 2D American penalty is now scaled by `1/dt` so `lambda` has the same meaning
+  as in the 1D solvers (previously the penalty was negligible against the
+  `1/dt` diagonal and the projection step did all the work).
+- Batch solvers catch exceptions inside worker threads (a zero pivot used to
+  call `std::terminate` and kill the R session) and return `NaN` with a
+  warning; a non-convergence at time step 0 is now reported.
+
 # LocalVolatility NEWS
 
 ## 3.1.0 (2026-04-06)

@@ -1,8 +1,8 @@
 Package: LocalVolatility
 Type: Package
 Title: Option Pricing Under Local and Stochastic Volatility
-Version: 3.2.0
-Date: 2026-04-13
+Version: 3.3.0
+Date: 2026-10-03
 Encoding: UTF-8
 Authors@R:
 	person("Alejandro", "Olguin",

@@ -9,12 +9,14 @@
 #include <functional>
 
 #include "thomas_factored.h"
+#include "sigma_time.h"
+#include <limits>
 
 using namespace Rcpp;
 
 // ============================================================================
 // Batch European solver: prices multiple European options sharing one sigma
-// surface in a single backward PDE sweep with pre-factored Thomas.
+// surface; one exact-step backward Crank-Nicolson sweep per option, threaded.
 // ============================================================================
 
 namespace {
@@ -46,22 +48,31 @@ inline double interp_raw(double s0, double s_min, double ds,
 //' @param taus Numeric vector of times to expiry (years).
 //' @param r_ds Numeric vector of domestic risk-free rates.
 //' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
-//' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+//' @param sigma Local volatility matrix with \code{n_s + 1} rows. Its columns
+//'   are uniformly spaced in calendar time on \code{[0, t_max]}: column 1 is the
+//'   valuation date and the last column is \code{t_max}. Any number of columns
+//'   is accepted; values are linearly interpolated in time.
 //' @param types Character vector, each element \code{"call"} or \code{"put"}.
 //' @param s_min,s_max Domain bounds for the asset grid.
 //' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
-//' @param n_t Number of time steps.
+//' @param n_t Number of time steps per option (each option uses its own exact
+//'   step \code{tau_j / n_t}, so maturities are never rounded).
+//' @param t_max Calendar horizon spanned by the sigma columns (years). Defaults
+//'   to \code{max(taus)} when not positive.
+//' @param n_threads Number of threads for parallel option solves
+//'   (0 = auto-detect; default 0).
 //'
 //' @return Numeric vector of option prices (same length as \code{strikes}).
 //'
 //' @details
 //' All options must lie on the same spatial domain \code{[s_min, s_max]} and
-//' use the same sigma surface. The solver steps backward from \code{max(taus)}
-//' and extracts each option's price at the time step closest to its maturity.
-//' The tridiagonal Crank-Nicolson system is factored once per time step (the
-//' LHS depends only on sigma and the grid, not on the strike), and each
-//' option's RHS is solved via forward/back substitution — O(n_s) per option
-//' per time step instead of O(2 * n_s) for a full Thomas solve.
+//' use the same sigma surface. Each option is an independent backward
+//' Crank-Nicolson sweep from its own maturity with step \code{tau_j / n_t};
+//' at every time level the local volatility is read at the corresponding
+//' calendar time by linear interpolation between the two neighbouring sigma
+//' columns. Options are solved in parallel across CPU cores with
+//' \code{std::thread}; a failed linear solve yields \code{NaN} with a warning
+//' instead of aborting.
 //'
 //' @examples
 //' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
@@ -86,7 +97,8 @@ Rcpp::NumericVector batch_price_european_lv(
     const Rcpp::NumericMatrix& sigma,
     const Rcpp::StringVector& types,
     double s_min, double s_max,
-    int n_s, int n_t) {
+    int n_s, int n_t,
+    double t_max = -1.0, int n_threads = 0) {
 
   const int n_opt = strikes.size();
 
@@ -96,21 +108,21 @@ Rcpp::NumericVector batch_price_european_lv(
     Rcpp::stop("All input vectors must have the same length.");
   if (n_s < 2 || n_t < 1) Rcpp::stop("n_s >= 2 and n_t >= 1 required.");
   if (s_max <= s_min) Rcpp::stop("s_max must be > s_min.");
-  if (sigma.nrow() != n_s + 1 || sigma.ncol() != n_t + 1)
-    Rcpp::stop("sigma must have dimensions (n_s+1) x (n_t+1).");
+  if (n_threads < 0) Rcpp::stop("n_threads must be >= 0.");
+  if (sigma.nrow() != n_s + 1 || sigma.ncol() < 1)
+    Rcpp::stop("sigma must have n_s+1 rows (columns = calendar-time nodes on [0, t_max]).");
 
   const double ds = (s_max - s_min) / n_s;
   const int N = n_s - 1; // interior nodes
 
-  // Find max tau to determine the time grid
+  // Calendar horizon spanned by the sigma columns (defaults to max(taus)).
   double tau_max = 0.0;
   for (int j = 0; j < n_opt; ++j)
     if (taus[j] > tau_max) tau_max = taus[j];
   if (tau_max <= 0.0) Rcpp::stop("All taus must be > 0.");
+  if (t_max <= 0.0) t_max = tau_max;
 
-  const double dt = tau_max / n_t;
-
-  // Parse types and validate
+  // Parse types and validate (before the parallel region)
   std::vector<bool> is_call(n_opt);
   for (int j = 0; j < n_opt; ++j) {
     const char* ts = CHAR(STRING_ELT(types, j));
@@ -119,178 +131,138 @@ Rcpp::NumericVector batch_price_european_lv(
     else Rcpp::stop("type must be 'call' or 'put' at index %d.", j + 1);
   }
 
-  // For each option, find which time step index corresponds to its tau.
-  // tau_j maps to step index: n_t - round(tau_j / dt).
-  // We extract the price at time step n where (n_t - n) * dt ≈ tau_j.
-  // Equivalently, we extract at backward step (n_t - extraction_step[j]).
-  std::vector<int> extract_step(n_opt); // backward step index at which to extract
-  for (int j = 0; j < n_opt; ++j) {
-    int steps_j = static_cast<int>(std::round(taus[j] / dt));
-    steps_j = std::max(1, std::min(steps_j, n_t));
-    extract_step[j] = steps_j;
-  }
-
-  // We need to use per-option r_d and r_f. Since CN coefficients depend on r_d and q(=r_f),
-  // different rates mean different tridiagonal systems. Group by (r_d, r_f) for factorization.
-  // For simplicity (and because in calibration all options share the same rates), we check
-  // if rates are uniform. If so, use the fast shared-factorization path.
-  // Otherwise, fall back to per-option solves (still zero-alloc).
-
-  bool uniform_rates = true;
-  double r_d0 = r_ds[0], r_f0 = r_fs[0];
-  for (int j = 1; j < n_opt; ++j) {
-    if (r_ds[j] != r_d0 || r_fs[j] != r_f0) { uniform_rates = false; break; }
-  }
-
-  // --- Pre-compute S_i values ---
+  // Pre-compute S values
   std::vector<double> S(n_s + 1);
   for (int i = 0; i <= n_s; ++i) S[i] = s_min + i * ds;
 
-  // --- Allocate per-option price grids ---
-  // old_prices[j] and new_prices[j] are (n_s+1) arrays for option j
-  std::vector<std::vector<double>> old_p(n_opt, std::vector<double>(n_s + 1));
-  std::vector<std::vector<double>> new_p(n_opt, std::vector<double>(n_s + 1));
-  std::vector<bool> extracted(n_opt, false);
+  // Copy sigma to a contiguous column-major raw array (thread-safe access)
+  const int sig_rows = n_s + 1;
+  const int sig_cols = sigma.ncol();
+  std::vector<double> sig_raw(static_cast<std::size_t>(sig_rows) * sig_cols);
+  for (int j = 0; j < sig_cols; ++j)
+    for (int i = 0; i < sig_rows; ++i)
+      sig_raw[i + j * sig_rows] = sigma(i, j);
 
-  // Result vector
-  Rcpp::NumericVector result(n_opt);
-
-  // --- Terminal condition (at tau_max) for each option ---
+  // Copy scalar parameters for thread safety
+  std::vector<double> spots_v(n_opt), strikes_v(n_opt), taus_v(n_opt),
+                      rds_v(n_opt), rfs_v(n_opt);
   for (int j = 0; j < n_opt; ++j) {
-    double k = strikes[j];
-    for (int i = 0; i <= n_s; ++i) {
-      old_p[j][i] = is_call[j] ? std::max(S[i] - k, 0.0)
-                                : std::max(k - S[i], 0.0);
-    }
+    spots_v[j]   = spots[j];
+    strikes_v[j] = strikes[j];
+    taus_v[j]    = taus[j];
+    rds_v[j]     = r_ds[j];
+    rfs_v[j]     = r_fs[j];
   }
 
-  // --- Shared workspace for Thomas ---
-  // Tridiagonal bands (interior nodes only, size N = n_s - 1)
-  std::vector<double> a_vec(N), b_vec(N), c_vec(N);
-  std::vector<double> cp(N), inv_denom(N);
-  // Per-option RHS and solution (allocated once, reused)
-  std::vector<double> d_vec(N), x_vec(N);
+  std::vector<double> results(n_opt, 0.0);
+  std::vector<int>    err_flags(n_opt, 0);
 
-  // --- Backward time stepping ---
-  for (int n = n_t - 1; n >= 0; --n) {
-    double t_rem = (n_t - n) * dt; // time remaining at step n
+  // Worker: each option is an independent backward Crank-Nicolson sweep with
+  // its own exact step dt_j = tau_j / n_t; sigma is read at calendar time.
+  auto solve_range = [&](int j_begin, int j_end) {
+    std::vector<double> old_prices(n_s + 1), new_prices(n_s + 1);
+    std::vector<double> a(N), b(N), c(N), d(N), cp(N), x(N);
 
-    // Build tridiagonal LHS for this time step (shared across all options if uniform rates)
-    if (uniform_rates) {
-      double rd = r_d0, q = r_f0;
-      for (int i = 1; i < n_s; ++i) {
-        double sig_n = sigma(i, n);
-        double alpha_n = 0.5 * sig_n * sig_n * S[i] * S[i];
-        double diff_coeff = alpha_n / (ds * ds);
-        double conv_coeff = (rd - q) * S[i] / (2.0 * ds);
+    for (int j = j_begin; j < j_end; ++j) {
+      try {
+        const double k     = strikes_v[j];
+        const double tau_j = taus_v[j];
+        const double rd    = rds_v[j];
+        const double q     = rfs_v[j];
+        const double spot  = spots_v[j];
+        const bool   call  = is_call[j];
 
-        a_vec[i - 1] = -0.5 * dt * (diff_coeff - conv_coeff);
-        b_vec[i - 1] =  1.0 + 0.5 * dt * (2.0 * diff_coeff + rd);
-        c_vec[i - 1] = -0.5 * dt * (diff_coeff + conv_coeff);
-      }
-      thomas::factor(a_vec.data(), b_vec.data(), c_vec.data(),
-                     cp.data(), inv_denom.data(), N);
-    }
-
-    // Process each active option
-    for (int j = 0; j < n_opt; ++j) {
-      if (extracted[j]) continue;
-
-      double rd = r_ds[j], q = r_fs[j], k = strikes[j];
-      double spot_j = spots[j];
-
-      // Boundaries at this time step
-      double u_bound, l_bound;
-      if (is_call[j]) {
-        u_bound = 0.0;
-        l_bound = std::max(s_max * std::exp(-q * t_rem)
-                           - k * std::exp(-rd * t_rem), 0.0);
-      } else {
-        u_bound = k * std::exp(-rd * t_rem);
-        l_bound = 0.0;
-      }
-
-      new_p[j][0]    = u_bound;
-      new_p[j][n_s]  = l_bound;
-
-      // Build RHS (explicit part)
-      for (int i = 1; i < n_s; ++i) {
-        double sig_np1 = sigma(i, n + 1);
-        double alpha_np = 0.5 * sig_np1 * sig_np1 * S[i] * S[i];
-        double diff_coeff = alpha_np / (ds * ds);
-        double conv_coeff = (rd - q) * S[i] / (2.0 * ds);
-
-        d_vec[i - 1] =
-            0.5 * dt * (diff_coeff - conv_coeff) * old_p[j][i - 1]
-          + (1.0 - 0.5 * dt * (2.0 * diff_coeff + rd)) * old_p[j][i]
-          + 0.5 * dt * (diff_coeff + conv_coeff) * old_p[j][i + 1];
-      }
-
-      // Boundary contributions
-      if (uniform_rates) {
-        d_vec[0]     -= a_vec[0]     * u_bound;
-        d_vec[N - 1] -= c_vec[N - 1] * l_bound;
-      } else {
-        // Need to build LHS for this option's rates
-        for (int i = 1; i < n_s; ++i) {
-          double sig_n = sigma(i, n);
-          double alpha_n = 0.5 * sig_n * sig_n * S[i] * S[i];
-          double diff_coeff = alpha_n / (ds * ds);
-          double conv_coeff = (rd - q) * S[i] / (2.0 * ds);
-
-          a_vec[i - 1] = -0.5 * dt * (diff_coeff - conv_coeff);
-          b_vec[i - 1] =  1.0 + 0.5 * dt * (2.0 * diff_coeff + rd);
-          c_vec[i - 1] = -0.5 * dt * (diff_coeff + conv_coeff);
+        if (tau_j <= 0.0) {
+          results[j] = call ? std::max(spot - k, 0.0) : std::max(k - spot, 0.0);
+          continue;
         }
-        d_vec[0]     -= a_vec[0]     * u_bound;
-        d_vec[N - 1] -= c_vec[N - 1] * l_bound;
-      }
 
-      // Zero the touching off-diagonals before solving
-      double a0_save = a_vec[0], cN_save = c_vec[N - 1];
+        const double dt_j = tau_j / n_t;
 
-      // Solve
-      if (uniform_rates) {
-        // Use pre-factored solve (shared LHS)
-        // Adjust d for zeroed off-diagonals: a[0] contribution already subtracted,
-        // but factor used original a[0]. We need to adjust:
-        // The factored solve expects the system as-is. Since a[0]=0 by convention
-        // in the tridiagonal (boundary row removed), and we already subtracted
-        // a_vec[0]*u_bound from d, we solve with factored a,b,c directly.
-        thomas::solve_factored(a_vec.data(), cp.data(), inv_denom.data(),
-                               d_vec.data(), x_vec.data(), N);
-      } else {
-        a_vec[0] = 0.0;
-        c_vec[N - 1] = 0.0;
-        thomas::solve(a_vec.data(), b_vec.data(), c_vec.data(),
-                      d_vec.data(), x_vec.data(), cp.data(), N);
-        a_vec[0] = a0_save;
-        c_vec[N - 1] = cN_save;
-      }
+        for (int i = 0; i <= n_s; ++i)
+          old_prices[i] = call ? std::max(S[i] - k, 0.0) : std::max(k - S[i], 0.0);
 
-      for (int i = 1; i < n_s; ++i)
-        new_p[j][i] = x_vec[i - 1];
+        for (int n = n_t - 1; n >= 0; --n) {
+          const double t_rem = (n_t - n) * dt_j;
+          const lvtime::ColLerp c_imp = lvtime::col_lerp(n * dt_j,       t_max, sig_cols);
+          const lvtime::ColLerp c_exp = lvtime::col_lerp((n + 1) * dt_j, t_max, sig_cols);
 
-      std::swap(old_p[j], new_p[j]);
+          double u_bound, l_bound;
+          if (call) {
+            u_bound = 0.0;
+            l_bound = std::max(s_max * std::exp(-q * t_rem)
+                               - k * std::exp(-rd * t_rem), 0.0);
+          } else {
+            u_bound = k * std::exp(-rd * t_rem);
+            l_bound = 0.0;
+          }
 
-      // Check if we should extract this option's price at this time step
-      // extract_step[j] = number of backward steps for this option's tau
-      // We are at backward step (n_t - n)
-      int bstep = n_t - n;
-      if (bstep == extract_step[j]) {
-        result[j] = interp_raw(spot_j, s_min, ds, old_p[j].data(), n_s + 1);
-        extracted[j] = true;
+          for (int i = 1; i < n_s; ++i) {
+            const double sig_n   = lvtime::at_raw(sig_raw.data(), sig_rows, i, c_imp);
+            const double sig_np1 = lvtime::at_raw(sig_raw.data(), sig_rows, i, c_exp);
+            const double diff_n  = 0.5 * sig_n   * sig_n   * S[i] * S[i] / (ds * ds);
+            const double diff_np = 0.5 * sig_np1 * sig_np1 * S[i] * S[i] / (ds * ds);
+            const double conv    = (rd - q) * S[i] / (2.0 * ds);
+
+            a[i - 1] = -0.5 * dt_j * (diff_n - conv);
+            b[i - 1] =  1.0 + 0.5 * dt_j * (2.0 * diff_n + rd);
+            c[i - 1] = -0.5 * dt_j * (diff_n + conv);
+
+            d[i - 1] =
+                0.5 * dt_j * (diff_np - conv) * old_prices[i - 1]
+              + (1.0 - 0.5 * dt_j * (2.0 * diff_np + rd)) * old_prices[i]
+              + 0.5 * dt_j * (diff_np + conv) * old_prices[i + 1];
+          }
+
+          d[0]     -= a[0]     * u_bound;
+          d[N - 1] -= c[N - 1] * l_bound;
+          a[0]      = 0.0;
+          c[N - 1]  = 0.0;
+
+          thomas::solve(a.data(), b.data(), c.data(), d.data(), x.data(), cp.data(), N);
+
+          new_prices[0]   = u_bound;
+          new_prices[n_s] = l_bound;
+          for (int i = 1; i < n_s; ++i) new_prices[i] = x[i - 1];
+          std::swap(old_prices, new_prices);
+        }
+
+        results[j] = interp_raw(spot, s_min, ds, old_prices.data(), n_s + 1);
+      } catch (...) {
+        // Never let an exception escape a worker thread (std::terminate).
+        results[j]   = std::numeric_limits<double>::quiet_NaN();
+        err_flags[j] = 1;
       }
     }
-  }
+  };
 
-  // Handle any options not yet extracted (shouldn't happen, but safety)
-  for (int j = 0; j < n_opt; ++j) {
-    if (!extracted[j]) {
-      result[j] = interp_raw(spots[j], s_min, ds, old_p[j].data(), n_s + 1);
+  unsigned int n_thr = (n_threads > 0)
+    ? static_cast<unsigned int>(n_threads)
+    : std::thread::hardware_concurrency();
+  if (n_thr == 0) n_thr = 1;
+  if (static_cast<int>(n_thr) > n_opt) n_thr = n_opt;
+
+  if (n_thr <= 1) {
+    solve_range(0, n_opt);
+  } else {
+    std::vector<std::thread> threads;
+    threads.reserve(n_thr);
+    const int chunk = n_opt / n_thr, remainder = n_opt % n_thr;
+    int start = 0;
+    for (unsigned int t = 0; t < n_thr; ++t) {
+      const int end = start + chunk + (static_cast<int>(t) < remainder ? 1 : 0);
+      threads.emplace_back(solve_range, start, end);
+      start = end;
     }
+    for (auto& th : threads) th.join();
   }
 
+  for (int j = 0; j < n_opt; ++j)
+    if (err_flags[j])
+      Rcpp::warning("Option %d: linear solve failed (zero pivot); price set to NaN.", j + 1);
+
+  Rcpp::NumericVector result(n_opt);
+  for (int j = 0; j < n_opt; ++j) result[j] = results[j];
   return result;
 }
 
@@ -305,27 +277,33 @@ Rcpp::NumericVector batch_price_european_lv(
 //' Prices multiple American options that share the same local volatility surface
 //' and PDE grid. Each option is an independent backward Crank-Nicolson solve
 //' with penalty-projection for early exercise, parallelized across options
-//' via OpenMP.
+//' via \code{std::thread}.
 //'
 //' @param spots Numeric vector of spot prices (one per option).
 //' @param strikes Numeric vector of strike prices.
 //' @param taus Numeric vector of times to expiry (years).
 //' @param r_ds Numeric vector of domestic risk-free rates.
 //' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
-//' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+//' @param sigma Local volatility matrix with \code{n_s + 1} rows. Its columns
+//'   are uniformly spaced in calendar time on \code{[0, t_max]}: column 1 is the
+//'   valuation date and the last column is \code{t_max}. Any number of columns
+//'   is accepted; values are linearly interpolated in time.
 //' @param types Character vector, each element \code{"call"} or \code{"put"}.
 //' @param s_min,s_max Domain bounds for the asset grid.
 //' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
-//' @param n_t Number of time steps.
+//' @param n_t Number of time steps per option (exact step \code{tau_j / n_t}).
 //' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 //' @param tolerance Convergence tolerance for penalty iterations.
 //' @param n_threads Number of threads for parallel option solves
 //'   (0 = auto-detect; default 0).
+//' @param t_max Calendar horizon spanned by the sigma columns (years). Defaults
+//'   to \code{max(taus)} when not positive.
 //'
 //' @return Numeric vector of option prices (same length as \code{strikes}).
 //'
 //' @details
-//' Each option is solved independently using the same sigma surface and grid.
+//' Each option is solved independently using the same sigma surface and grid;
+//' the local volatility is read at calendar time (see \code{sigma}).
 //' The solver uses Crank-Nicolson with a penalty-projection fixed-point
 //' iteration for the American constraint, capped at 200 iterations per time
 //' step. Options are solved in parallel across CPU cores using \code{std::thread}.
@@ -358,7 +336,7 @@ Rcpp::NumericVector batch_price_american_lv(
     const Rcpp::StringVector& types,
     double s_min, double s_max,
     int n_s, int n_t,
-    double lambda, double tolerance, int n_threads = 0) {
+    double lambda, double tolerance, int n_threads = 0, double t_max = -1.0) {
 
   const int n_opt = strikes.size();
 
@@ -371,8 +349,8 @@ Rcpp::NumericVector batch_price_american_lv(
   if (lambda <= 0.0) Rcpp::stop("lambda must be > 0.");
   if (tolerance <= 0.0) Rcpp::stop("tolerance must be > 0.");
   if (n_threads < 0) Rcpp::stop("n_threads must be >= 0.");
-  if (sigma.nrow() != n_s + 1 || sigma.ncol() != n_t + 1)
-    Rcpp::stop("sigma must have dimensions (n_s+1) x (n_t+1).");
+  if (sigma.nrow() != n_s + 1 || sigma.ncol() < 1)
+    Rcpp::stop("sigma must have n_s+1 rows (columns = calendar-time nodes on [0, t_max]).");
 
   const double ds = (s_max - s_min) / n_s;
   const int N = n_s - 1;
@@ -394,8 +372,8 @@ Rcpp::NumericVector batch_price_american_lv(
   // Copy sigma to contiguous column-major raw array for thread-safe access
   // Rcpp::NumericMatrix is column-major: sigma(i,j) = data[i + j*(n_s+1)]
   const int sig_rows = n_s + 1;
-  const int sig_cols = n_t + 1;
-  std::vector<double> sig_raw(sig_rows * sig_cols);
+  const int sig_cols = sigma.ncol();
+  std::vector<double> sig_raw(static_cast<std::size_t>(sig_rows) * sig_cols);
   for (int j = 0; j < sig_cols; ++j)
     for (int i = 0; i < sig_rows; ++i)
       sig_raw[i + j * sig_rows] = sigma(i, j);
@@ -411,8 +389,13 @@ Rcpp::NumericVector batch_price_american_lv(
     rfs_v[j]     = r_fs[j];
   }
 
+  double tau_max = 0.0;
+  for (int j = 0; j < n_opt; ++j) if (taus_v[j] > tau_max) tau_max = taus_v[j];
+  if (t_max <= 0.0) t_max = tau_max;
+
   std::vector<double> results(n_opt, 0.0);
-  std::vector<int> warn_flags(n_opt, 0); // non-convergence warnings
+  std::vector<int> warn_flags(n_opt, -1); // time step of first non-convergence
+  std::vector<int> err_flags(n_opt, 0);
 
   // Worker function: solves a range of options [j_begin, j_end)
   auto solve_range = [&](int j_begin, int j_end) {
@@ -424,6 +407,7 @@ Rcpp::NumericVector batch_price_american_lv(
     std::vector<double> cp(N), x(N), temp(N), pv(N);
 
     for (int j = j_begin; j < j_end; ++j) {
+     try {
       double k     = strikes_v[j];
       double tau_j = taus_v[j];
       double rd    = rds_v[j];
@@ -447,6 +431,8 @@ Rcpp::NumericVector batch_price_american_lv(
       // Backward time stepping
       for (int n = n_t - 1; n >= 0; --n) {
         double t_rem = (n_t - n) * dt_j;
+        const lvtime::ColLerp c_imp = lvtime::col_lerp(n * dt_j,       t_max, sig_cols);
+        const lvtime::ColLerp c_exp = lvtime::col_lerp((n + 1) * dt_j, t_max, sig_cols);
 
         // Boundaries
         double u_bound, l_bound;
@@ -462,11 +448,11 @@ Rcpp::NumericVector batch_price_american_lv(
         new_prices[0]    = u_bound;
         new_prices[n_s]  = l_bound;
 
-        // Build tridiagonal system
-        // sigma column n for implicit level, n+1 for explicit level
+        // Build tridiagonal system; sigma read at calendar time t_n (implicit)
+        // and t_{n+1} (explicit) by interpolation between columns.
         for (int i = 1; i < n_s; ++i) {
-          double sig_n   = sig_raw[i + n * sig_rows];
-          double sig_np1 = sig_raw[i + (n + 1) * sig_rows];
+          double sig_n   = lvtime::at_raw(sig_raw.data(), sig_rows, i, c_imp);
+          double sig_np1 = lvtime::at_raw(sig_raw.data(), sig_rows, i, c_exp);
 
           double alpha_n  = 0.5 * sig_n * sig_n * S[i] * S[i];
           double alpha_np = 0.5 * sig_np1 * sig_np1 * S[i] * S[i];
@@ -546,6 +532,10 @@ Rcpp::NumericVector batch_price_american_lv(
 
       // Interpolate at spot
       results[j] = interp_raw(spot, s_min, ds, old_prices.data(), n_s + 1);
+     } catch (...) {
+      results[j]   = std::numeric_limits<double>::quiet_NaN();
+      err_flags[j] = 1;
+     }
     }
   };
 
@@ -575,10 +565,11 @@ Rcpp::NumericVector batch_price_american_lv(
 
   // Issue warnings outside parallel region
   for (int j = 0; j < n_opt; ++j) {
-    if (warn_flags[j] > 0) {
+    if (err_flags[j])
+      Rcpp::warning("Option %d: linear solve failed (zero pivot); price set to NaN.", j + 1);
+    else if (warn_flags[j] >= 0)
       Rcpp::warning("Option %d: penalty iteration did not converge at time step %d.",
                     j + 1, warn_flags[j]);
-    }
   }
 
   Rcpp::NumericVector out(n_opt);

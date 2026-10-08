@@ -231,7 +231,7 @@ Let \(V = V(S,X,t)\). With equity local vol \(\sigma_S\) and FX local vol \(\sig
   + \underbrace{\mu_S}_{r_f - q - \rho\sigma_S\sigma_X} S V_S + (r_d - r_f) X V_X - r_d V = 0. \]
 
 Terminal condition: \(V(S,X,T) = \max(\pm(SX-K),0)\). Far-field Dirichlet boundaries use
-\( (SX)^+ e^{-(r_f + q)\tau} - K e^{-r_d\tau} \) for calls and the corresponding put asymptotes.
+\( SX e^{-q\tau} - K e^{-r_d\tau} \) for calls (the product \(SX\) drifts at \(r_d - q\) under the domestic measure) and the corresponding put asymptotes; the American solvers take the maximum with the payoff.
 
 ### 2D American
 
@@ -256,9 +256,10 @@ on \((S,v)\) with the same infrastructure as the 2D product-option solvers.
 ## Numerics
 
 - **Grids:** Tavella-Randall nonuniform grids with parameter `alpha` (returns `n_grid+1` nodes for consistency with the PDE code).
-- **Splitting:** Yanenko (ADI-like), implicit in S then implicit in X.
+- **Sigma time axis:** every local-volatility matrix is read in calendar time: columns are uniform on `[0, t_max]` (column 1 = valuation date), interpolated linearly in time. Pass `sigma_t_max` (2D) / `t_max` (batch) when one matrix is shared across maturities.
+- **Splitting:** Yanenko (ADI-like), implicit in S then implicit in X; first order in time, cross term explicit.
 - **Linear solves:** Thomas algorithm for tridiagonal systems.
-- **American:** Penalty method with `lambda` (typically 1e4-1e6) and relative tolerance, capped at 200 iterations per time step with a warning on non-convergence.
+- **American:** Penalty-projection method; `lambda` is relative to the identity in every solver (the 2D solvers scale it by `1/dt`), capped at 200 iterations per time step with a warning on non-convergence.
 - **Interpolation:** Linear (1D) or bilinear (2D) at the spot price on the computed grid.
 
 ## Input validation

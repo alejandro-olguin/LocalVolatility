@@ -146,8 +146,12 @@ american_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.
-#' @param sigma_x Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.
+#' @param sigma_s Local volatility matrix for the stock with \code{n_s + 1} rows.
+#'   Columns are uniformly spaced in calendar time on \code{[0, sigma_t_max]}:
+#'   column 1 is the valuation date, the last column is \code{sigma_t_max}.
+#'   Any number of columns is accepted; values are interpolated in time.
+#' @param sigma_x Local volatility matrix for the FX with \code{n_x + 1} rows,
+#'   same time convention as \code{sigma_s}.
 #' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
 #' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
@@ -156,16 +160,23 @@ american_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
 #' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
-#' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
+#' @param lambda Penalty parameter (> 0). Scaled internally by \code{1/dt} so it
+#'   has the same meaning as in the 1D solvers (relative to the identity).
 #' @param tolerance Convergence tolerance for penalty iterations.
+#' @param sigma_t_max Calendar horizon (years) spanned by the sigma columns.
+#'   Defaults to \code{tau} when not positive, i.e. the matrices describe
+#'   exactly this option's life. Pass the common horizon when one matrix is
+#'   shared across options of different maturities.
 #'
 #' @return Option price as a numeric scalar.
 #'
 #' @details
 #' Domestic-measure dynamics with pointwise volatilities:
 #' \eqn{\mu_S = r_f - q - \rho \sigma_S \sigma_X} in S, \eqn{r_d - r_f} in X,
-#' discounting at \eqn{r_d}. The penalty parameter is split as \eqn{\lambda/2}
-#' across the two operator-splitting sub-steps. Maximum 200 penalty iterations
+#' discounting at \eqn{r_d}. Far-field Dirichlet values are the maximum of the
+#' European asymptote \eqn{SX e^{-q\tau} - K e^{-r_d\tau}} and the payoff. The
+#' penalty parameter is split as \eqn{\lambda/2} across the two
+#' operator-splitting sub-steps. Maximum 200 penalty iterations
 #' per time step with a warning on non-convergence.
 #'
 #' @examples
@@ -176,8 +187,8 @@ american_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #'                       10, 300, 1, 60, 20, 20, 25, 3, 1e4, 1e-8)
 #'
 #' @export
-american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance) {
-    .Call(`_LocalVolatility_american_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance)
+american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance, sigma_t_max = -1.0) {
+    .Call(`_LocalVolatility_american_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, lambda, tolerance, sigma_t_max)
 }
 
 #' Batch-price European options under local volatility (1D)
@@ -192,22 +203,31 @@ american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 #' @param taus Numeric vector of times to expiry (years).
 #' @param r_ds Numeric vector of domestic risk-free rates.
 #' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
-#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+#' @param sigma Local volatility matrix with \code{n_s + 1} rows. Its columns
+#'   are uniformly spaced in calendar time on \code{[0, t_max]}: column 1 is the
+#'   valuation date and the last column is \code{t_max}. Any number of columns
+#'   is accepted; values are linearly interpolated in time.
 #' @param types Character vector, each element \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Domain bounds for the asset grid.
 #' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
-#' @param n_t Number of time steps.
+#' @param n_t Number of time steps per option (each option uses its own exact
+#'   step \code{tau_j / n_t}, so maturities are never rounded).
+#' @param t_max Calendar horizon spanned by the sigma columns (years). Defaults
+#'   to \code{max(taus)} when not positive.
+#' @param n_threads Number of threads for parallel option solves
+#'   (0 = auto-detect; default 0).
 #'
 #' @return Numeric vector of option prices (same length as \code{strikes}).
 #'
 #' @details
 #' All options must lie on the same spatial domain \code{[s_min, s_max]} and
-#' use the same sigma surface. The solver steps backward from \code{max(taus)}
-#' and extracts each option's price at the time step closest to its maturity.
-#' The tridiagonal Crank-Nicolson system is factored once per time step (the
-#' LHS depends only on sigma and the grid, not on the strike), and each
-#' option's RHS is solved via forward/back substitution — O(n_s) per option
-#' per time step instead of O(2 * n_s) for a full Thomas solve.
+#' use the same sigma surface. Each option is an independent backward
+#' Crank-Nicolson sweep from its own maturity with step \code{tau_j / n_t};
+#' at every time level the local volatility is read at the corresponding
+#' calendar time by linear interpolation between the two neighbouring sigma
+#' columns. Options are solved in parallel across CPU cores with
+#' \code{std::thread}; a failed linear solve yields \code{NaN} with a warning
+#' instead of aborting.
 #'
 #' @examples
 #' Sigma <- matrix(0.2, nrow = 51, ncol = 51)
@@ -222,8 +242,8 @@ american_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_
 #'   s_min = 1, s_max = 400, n_s = 50, n_t = 50)
 #'
 #' @export
-batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t) {
-    .Call(`_LocalVolatility_batch_price_european_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t)
+batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, t_max = -1.0, n_threads = 0L) {
+    .Call(`_LocalVolatility_batch_price_european_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, t_max, n_threads)
 }
 
 #' Batch-price American options under local volatility (1D)
@@ -231,27 +251,33 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #' Prices multiple American options that share the same local volatility surface
 #' and PDE grid. Each option is an independent backward Crank-Nicolson solve
 #' with penalty-projection for early exercise, parallelized across options
-#' via OpenMP.
+#' via \code{std::thread}.
 #'
 #' @param spots Numeric vector of spot prices (one per option).
 #' @param strikes Numeric vector of strike prices.
 #' @param taus Numeric vector of times to expiry (years).
 #' @param r_ds Numeric vector of domestic risk-free rates.
 #' @param r_fs Numeric vector of foreign risk-free rates or cost-of-carry rates.
-#' @param sigma Local volatility matrix of size \code{(n_s + 1) x (n_t + 1)}.
+#' @param sigma Local volatility matrix with \code{n_s + 1} rows. Its columns
+#'   are uniformly spaced in calendar time on \code{[0, t_max]}: column 1 is the
+#'   valuation date and the last column is \code{t_max}. Any number of columns
+#'   is accepted; values are linearly interpolated in time.
 #' @param types Character vector, each element \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Domain bounds for the asset grid.
 #' @param n_s Number of spatial intervals (\code{n_s + 1} nodes).
-#' @param n_t Number of time steps.
+#' @param n_t Number of time steps per option (exact step \code{tau_j / n_t}).
 #' @param lambda Penalty parameter (> 0, typically 1e4 to 1e6).
 #' @param tolerance Convergence tolerance for penalty iterations.
 #' @param n_threads Number of threads for parallel option solves
 #'   (0 = auto-detect; default 0).
+#' @param t_max Calendar horizon spanned by the sigma columns (years). Defaults
+#'   to \code{max(taus)} when not positive.
 #'
 #' @return Numeric vector of option prices (same length as \code{strikes}).
 #'
 #' @details
-#' Each option is solved independently using the same sigma surface and grid.
+#' Each option is solved independently using the same sigma surface and grid;
+#' the local volatility is read at calendar time (see \code{sigma}).
 #' The solver uses Crank-Nicolson with a penalty-projection fixed-point
 #' iteration for the American constraint, capped at 200 iterations per time
 #' step. Options are solved in parallel across CPU cores using \code{std::thread}.
@@ -273,8 +299,8 @@ batch_price_european_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, typ
 #'   n_threads = 0)
 #'
 #' @export
-batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads = 0L) {
-    .Call(`_LocalVolatility_batch_price_american_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads)
+batch_price_american_lv <- function(spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads = 0L, t_max = -1.0) {
+    .Call(`_LocalVolatility_batch_price_american_lv`, spots, strikes, taus, r_ds, r_fs, sigma, types, s_min, s_max, n_s, n_t, lambda, tolerance, n_threads, t_max)
 }
 
 #' European Option 2D (constant volatility)
@@ -452,8 +478,12 @@ european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' @param r_d Risk-free rate (domestic).
 #' @param r_f Risk-free rate (foreign).
 #' @param q Dividend yield.
-#' @param sigma_s Local volatility matrix for the stock of size \code{(n_s + 1) x n_t}.
-#' @param sigma_x Local volatility matrix for the FX of size \code{(n_x + 1) x n_t}.
+#' @param sigma_s Local volatility matrix for the stock with \code{n_s + 1} rows.
+#'   Columns are uniformly spaced in calendar time on \code{[0, sigma_t_max]}:
+#'   column 1 is the valuation date, the last column is \code{sigma_t_max}.
+#'   Any number of columns is accepted; values are interpolated in time.
+#' @param sigma_x Local volatility matrix for the FX with \code{n_x + 1} rows,
+#'   same time convention as \code{sigma_s}.
 #' @param rho Correlation between the stock and the FX in \code{[-1, 1]}.
 #' @param type Either \code{"call"} or \code{"put"}.
 #' @param s_min,s_max Min/Max of the stock grid.
@@ -462,6 +492,10 @@ european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #' @param n_x Number of intervals in FX grid (\code{n_x + 1} nodes).
 #' @param n_t Number of time steps.
 #' @param alpha Grid clustering parameter for Tavella-Randall grids (> 0).
+#' @param sigma_t_max Calendar horizon (years) spanned by the sigma columns.
+#'   Defaults to \code{tau} when not positive, i.e. the matrices describe
+#'   exactly this option's life. Pass the common horizon when one matrix is
+#'   shared across options of different maturities.
 #'
 #' @return Option price as a numeric scalar.
 #'
@@ -480,8 +514,8 @@ european_option_lv <- function(s_0, k, tau, r_d, r_f, sigma, type, s_min, s_max,
 #'                       10, 300, 1, 60, 20, 20, 25, 3)
 #'
 #' @export
-european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha) {
-    .Call(`_LocalVolatility_european_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha)
+european_option_lv_2d <- function(s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, sigma_t_max = -1.0) {
+    .Call(`_LocalVolatility_european_option_lv_2d`, s_0, x_0, k, tau, r_d, r_f, q, sigma_s, sigma_x, rho, type, s_min, s_max, x_min, x_max, n_s, n_x, n_t, alpha, sigma_t_max)
 }
 
 #' Heston Model (closed-form, characteristic function)
